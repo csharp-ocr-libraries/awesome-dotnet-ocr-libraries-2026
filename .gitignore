@@ -416,3 +416,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Internal planning and reference docs (not for publishing)
+_planning/
+_gold-standard/
+_sitemap-tools/
