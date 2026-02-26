@@ -405,17 +405,13 @@ Once the MAUI-specific `ITesseract` dependency is removed, the OCR service class
 
 ## Additional IronOCR Capabilities
 
-Beyond platform coverage and PDF support, IronOCR includes features that extend well past TesseractOcrMaui's scope:
+Beyond the capabilities covered above, IronOCR includes features not discussed in earlier sections:
 
-- **[125+ language packs via NuGet](https://ironsoftware.com/csharp/ocr/languages/):** Install any language with `dotnet add package IronOcr.Languages.*`; no file management required
-- **[Searchable PDF output](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** `result.SaveAsSearchablePdf("output.pdf")` produces a PDF with invisible text layer for search and copy-paste
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` to extract barcodes and QR codes from the same image pass
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** `new CropRectangle(x, y, width, height)` restricts processing to a defined area, reducing noise and improving performance
-- **[Structured data extraction](https://ironsoftware.com/csharp/ocr/how-to/read-results/):** `result.Words`, `result.Lines`, `result.Paragraphs`, and `result.Pages` expose full document structure with bounding box coordinates
-- **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Native async support for high-throughput server scenarios
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** `result.SaveAsHocrFile()` outputs W3C-standard HTML with word positioning for downstream document processing
-- **[Confidence scores per word](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Per-word confidence enables selective human review of low-confidence extractions
-- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Specialized handling for multi-page scanned documents including automated rotation detection
+- **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Native async support for high-throughput server scenarios where results feed into parallel pipelines
+- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** `new CropRectangle(x, y, width, height)` restricts processing to a defined area, reducing noise and improving speed on structured forms
+- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Specialized handling for multi-page scanned documents including automated rotation detection and deskew applied per page
+- **[Passport and ID document reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Purpose-built extraction for machine-readable zones on travel documents
+- **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Extracts tabular data from scanned documents with structural row and column awareness
 
 ## .NET Compatibility and Future Readiness
 
@@ -429,4 +425,4 @@ The MAUI lock-in is not a nuance — it is the defining constraint. Every real-w
 
 IronOCR removes the platform boundary. The same `IronTesseract` class, the same `OcrInput` preprocessing pipeline, and the same language configuration work identically in a MAUI mobile app and an ASP.NET Core API deployed to Docker. A shared class library carries the OCR logic across the entire solution. When the product grows — and products grow — the OCR layer grows with it without a rewrite. The $749 perpetual license buys that architectural freedom alongside built-in PDF support, preprocessing that handles real-world mobile images, and commercial support when production issues arise.
 
-The download count gap — roughly 33,900 for TesseractOcrMaui versus millions for IronOCR — reflects the difference between a niche experimental tool and a library teams deploy to production at scale. For proof-of-concept work in a MAUI-only project with no path to server-side requirements, TesseractOcrMaui is a reasonable free starting point. For production applications, the architectural constraint it imposes will eventually cost more to work around than the IronOCR license costs to acquire. The [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) is the starting point for evaluating the full capability set.
+The download count gap — roughly 33,900 for TesseractOcrMaui versus millions for IronOCR — reflects the difference between a niche experimental tool and a library teams deploy to production at scale. For proof-of-concept work in a MAUI-only project with no path to server-side requirements, TesseractOcrMaui is a reasonable free starting point. For production applications, the architectural constraint it imposes will eventually cost more to work around than the IronOCR license costs to acquire.

@@ -1,4 +1,4 @@
-Dynamsoft Label Recognizer does one thing exceptionally well — MRZ extraction from passports, VIN scanning from vehicles, and structured label reading from industrial packaging — and refuses to do anything else. That narrow expertise becomes a budget problem the moment your application needs general document OCR alongside it, because then you are licensing Dynamsoft Label Recognizer for MRZ, Dynamsoft Barcode Reader for QR codes, Dynamsoft Document Normalizer for edge detection, and still hunting for a fourth library to handle full-page documents. [IronOCR](https://ironsoftware.com/csharp/ocr/) covers every one of those capabilities in a single NuGet package at $749 perpetual. This comparison examines where the specialist model breaks down and what the transition looks like in code.
+Dynamsoft Label Recognizer does one thing exceptionally well — MRZ extraction from passports, VIN scanning from vehicles, and structured label reading from industrial packaging — and refuses to do anything else. That narrow expertise becomes a budget problem the moment your application needs general document OCR alongside it, because then you are licensing Dynamsoft Label Recognizer for MRZ, Dynamsoft Barcode Reader for QR codes, Dynamsoft Document Normalizer for edge detection, and still hunting for a fourth library to handle full-page documents. [IronOCR](https://ironsoftware.com/csharp/ocr/) covers every one of those capabilities in a single NuGet package at $749 perpetual.
 
 ## Understanding Dynamsoft Label Recognizer
 
@@ -376,14 +376,6 @@ public class IronOcrWarehouseScanner
     }
 }
 ```
-
-Five-year licensing cost comparison for the warehouse scenario (MRZ + Barcodes + Documents):
-
-| Scenario | Dynamsoft | IronOCR |
-|----------|-----------|---------|
-| MRZ only | $2,995+ (5 years) | $749 (one-time) |
-| MRZ + Barcodes | $5,990+ (5 years) | $749 |
-| MRZ + Barcodes + PDF + General OCR | $9,985+ (5 years) | $749 |
 
 For the [region-based OCR documentation](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/) and [PDF input guide](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/), IronOCR covers both without any additional products.
 

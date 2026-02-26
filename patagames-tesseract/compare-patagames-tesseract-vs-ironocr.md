@@ -303,7 +303,7 @@ For the complete IronOCR API surface, see the [IronTesseract API reference](http
 
 ### The Linux Container Deployment
 
-The most common forcing function is a migration from Windows Server to Linux containers. A team that built an internal document processing tool on Windows, using Patagames for OCR, discovers during a cloud migration project that the library simply does not run in a Docker container on Amazon ECS or Azure Container Instances. The Windows-only native binary has no Linux equivalent. The migration options are either maintain a separate Windows compute instance just for OCR (expensive and architecturally awkward) or replace the OCR library. IronOCR is a drop-in replacement from an API standpoint — the `OcrApi.Create()` / `api.Init()` / `api.GetTextFromImage()` sequence becomes `new IronTesseract().Read(imagePath).Text` — and the application runs on Linux without any other changes. The [IronOCR Docker guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) covers the exact Dockerfile configuration for production container deployments.
+The most common forcing function is a migration from Windows Server to Linux containers. A team that built an internal document processing tool on Windows, using Patagames for OCR, discovers during a cloud migration project that the library simply does not run in a Docker container on Amazon ECS or Azure Container Instances. The Windows-only native binary has no Linux equivalent. The migration options are either maintain a separate Windows compute instance just for OCR (expensive and architecturally awkward) or replace the OCR library. IronOCR is a drop-in replacement from an API standpoint — the multi-step Patagames initialization sequence collapses to a single read call — and the application runs on Linux without any other changes. The [IronOCR Docker guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) covers the exact Dockerfile configuration for production container deployments.
 
 ### The PDF Processing Requirement
 
@@ -315,11 +315,11 @@ Patagames does not publish its license prices. Teams evaluating OCR libraries fo
 
 ### The Scan Quality Problem
 
-Invoice processing, form OCR, and scanned document archival all produce images that require preprocessing. A Patagames-based pipeline for these workflows requires writing preprocessing code in System.Drawing or a third-party imaging library, tuning thresholds manually, and maintaining that code as input quality varies. Teams that have built this infrastructure know it takes 20-40 hours to get right. IronOCR's built-in preprocessing eliminates that investment. `input.Deskew()`, `input.DeNoise()`, `input.Contrast()`, and `input.Binarize()` cover the cases that cause most OCR accuracy problems on real-world scans. The [low quality scan example](https://ironsoftware.com/csharp/ocr/examples/ocr-low-quality-scans-tesseract/) demonstrates the accuracy difference preprocessing makes on degraded images.
+Invoice processing, form OCR, and scanned document archival all produce images that require preprocessing. A Patagames-based pipeline for these workflows requires writing preprocessing code in System.Drawing or a third-party imaging library, tuning thresholds manually, and maintaining that code as input quality varies. Teams that have built this infrastructure know it takes 20-40 hours to get right. IronOCR's built-in preprocessing eliminates that investment — deskew, denoise, contrast, and binarization are single method calls that cover the cases causing most OCR accuracy problems on real-world scans. The [low quality scan example](https://ironsoftware.com/csharp/ocr/examples/ocr-low-quality-scans-tesseract/) demonstrates the accuracy difference preprocessing makes on degraded images.
 
 ### The Searchable PDF Archive Requirement
 
-Compliance, legal, and records management applications require searchable PDF output. A scanned document needs a text layer so users can search, copy, and highlight content in Acrobat or any PDF viewer. Patagames has no mechanism to produce searchable PDFs. Free Tesseract wrappers produce hOCR output that you can convert to a text layer using third-party tools, but that pipeline has multiple moving parts. IronOCR's `result.SaveAsSearchablePdf()` call handles the full pipeline in a single method. Teams building archival systems discover this capability gap early and it is rarely a feature that can be added to Patagames through a workaround — it requires replacing the library.
+Compliance, legal, and records management applications require searchable PDF output. A scanned document needs a text layer so users can search, copy, and highlight content in Acrobat or any PDF viewer. Patagames has no mechanism to produce searchable PDFs. Free Tesseract wrappers produce hOCR output that you can convert to a text layer using third-party tools, but that pipeline has multiple moving parts. IronOCR handles the full pipeline in a single method call — no external tools, no intermediate hOCR conversion step. Teams building archival systems discover this capability gap early and it is rarely a feature that can be added to Patagames through a workaround — it requires replacing the library.
 
 ## Common Migration Considerations
 
@@ -371,16 +371,14 @@ The [image orientation correction guide](https://ironsoftware.com/csharp/ocr/how
 
 ## Additional IronOCR Capabilities
 
-Beyond the core comparison points, IronOCR provides capabilities that Patagames Tesseract.NET SDK does not offer at any license tier:
+Beyond the core comparison points, IronOCR provides capabilities not covered in the sections above:
 
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Extract text from a specific bounding rectangle within an image using `CropRectangle`, useful for processing structured forms where only specific fields are needed.
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Enable `ocr.Configuration.ReadBarCodes = true` to detect and decode barcodes in the same pass as text extraction, without a separate barcode library.
-- **[Structured data extraction](https://ironsoftware.com/csharp/ocr/how-to/read-results/):** `OcrResult` exposes word-level coordinates, per-word confidence scores, line boundaries, and paragraph groupings — data that Patagames `GetTextFromImage` returns as a flat string.
-- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Automatic handling of multi-page scanned documents including TIFF stacks and multi-page PDFs.
+- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Automatic handling of multi-page scanned documents including TIFF stacks and multi-page PDFs in a single input load.
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Native async support for ASP.NET Core workloads, keeping request threads free during OCR processing.
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Export recognition results as hOCR HTML with bounding box data for downstream processing tools.
 - **[Speed optimization configuration](https://ironsoftware.com/csharp/ocr/how-to/ocr-fast-configuration/):** Control the speed/accuracy tradeoff explicitly for batch processing workloads where throughput matters more than per-document accuracy.
 - **[Specialized document types](https://ironsoftware.com/csharp/ocr/features/specialized/):** Dedicated guides and optimized configurations for passports, license plates, MICR cheque lines, handwriting, and table extraction — all outside Patagames' scope.
+- **[Confidence-based filtering](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Per-word and per-page confidence scores enable programmatic quality gates — reject or flag low-confidence results without manual review.
+- **[Image color correction](https://ironsoftware.com/csharp/ocr/how-to/image-color-correction/):** Color channel isolation and inversion filters improve recognition accuracy on documents with colored backgrounds or reverse-contrast text.
 
 ## .NET Compatibility and Future Readiness
 
@@ -394,4 +392,4 @@ The Windows-only constraint is the clearest reason to reconsider Patagames. Mode
 
 IronOCR's commercial justification is specific and measurable. It delivers native PDF support, automatic preprocessing, searchable PDF output, cross-platform deployment, and structured result data — none of which exist in Patagames regardless of license tier. The pricing is public ($749 perpetual for a single developer), the capabilities beyond free Tesseract wrappers are documented and concrete, and the deployment story is the same whether the target is Windows Server, Docker on Linux, or an ARM Mac.
 
-For teams currently using Patagames on a Windows-only deployment and satisfied with the support relationship, switching has a cost. But for any team evaluating options today — especially those planning cloud migration, containerization, or cross-platform support — the combination of Windows lock-in and non-transparent commercial pricing for free-engine wrapping makes Patagames a difficult choice to justify when IronOCR solves the problems Tesseract wrappers inherently cannot. For the full IronOCR documentation and getting started guides, see the [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/).
+For teams currently using Patagames on a Windows-only deployment and satisfied with the support relationship, switching has a cost. But for any team evaluating options today — especially those planning cloud migration, containerization, or cross-platform support — the combination of Windows lock-in and non-transparent commercial pricing for free-engine wrapping makes Patagames a difficult choice to justify when IronOCR solves the problems Tesseract wrappers inherently cannot.

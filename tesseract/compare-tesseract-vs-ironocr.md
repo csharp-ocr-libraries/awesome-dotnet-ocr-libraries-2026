@@ -437,11 +437,11 @@ Document processing applications almost always eventually need PDF support. The 
 
 ### Parallel Processing at Scale
 
-A batch OCR job processing 500 invoices benefits from parallelism. With the charlesw wrapper, the standard pattern is one `TesseractEngine` per thread, which loads 40-100 MB of language model data per instance. At eight threads, that is 320-800 MB of engine memory before any documents are loaded. Teams profiling their OCR services and finding memory pressure concentrated at engine initialization — rather than document content — find IronOCR's thread-safe single-instance model directly addresses the root cause. The [multithreading example](https://ironsoftware.com/csharp/ocr/examples/csharp-tesseract-multithreading-for-speed/) demonstrates the pattern.
+A batch OCR job processing 500 invoices benefits from parallelism. With the charlesw wrapper, the safe parallel processing pattern creates one engine instance per thread, loading 40-100 MB of language model data each. At eight threads, that is 320-800 MB of engine memory before any documents are loaded. Teams profiling their OCR services and finding memory pressure concentrated at engine initialization — rather than document content — find IronOCR's thread-safe single-instance model directly addresses the root cause. The [multithreading example](https://ironsoftware.com/csharp/ocr/examples/csharp-tesseract-multithreading-for-speed/) demonstrates the pattern.
 
 ### Deployment Environments Multiply
 
-A project that started on Windows adds a Linux container for cloud deployment. Suddenly the `libtesseract-dev` and `libleptonica-dev` apt-get install steps must be added to the Dockerfile, the tessdata files must be copied into the container, and the TESSDATA_PREFIX environment variable must be set correctly. Then a macOS developer joins the team. Then someone wants to deploy to AWS Lambda. Each platform adds another configuration surface that can fail silently — and `System.DllNotFoundException: Unable to load DLL 'leptonica-1.82.0'` at runtime in a production container is a worse outcome than a slightly higher NuGet package cost. The [IronOCR Docker deployment guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) shows the contrast: no apt-get, no COPY for tessdata, no environment variable.
+A project that started on Windows adds a Linux container for cloud deployment. The Dockerfile now needs native library installation steps, the tessdata files must be copied into the container, and the tessdata path environment variable must be set correctly. Then a macOS developer joins the team. Then someone wants to deploy to AWS Lambda. Each platform adds another configuration surface that can fail silently — a missing native library at runtime in a production container is a worse outcome than a slightly higher NuGet package cost. The [IronOCR Docker deployment guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) shows the contrast: no system packages, no tessdata copy step, no environment variable.
 
 ### Tesseract Version Currency Matters
 
@@ -455,17 +455,7 @@ The first cleanup step after migrating to IronOCR is deleting the tessdata folde
 
 ### PDF Library Removal
 
-Any PDF rendering library added solely to support Tesseract PDF processing — PdfiumViewer, PDFtoImage, Docnet.Core — can be removed. The native binary dependencies those packages required (`pdfium.dll`, GhostScript binaries) also go away. Dockerfile `COPY` and `apt-get` lines for those dependencies are no longer needed. The [IronOCR PDF input guide](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/) covers every PDF input variation that those libraries handled, including page range selection and password-protected documents.
-
-```csharp
-// Before: ~80 lines involving PdfiumViewer + TesseractEngine + temp file management
-// After:
-using var input = new OcrInput();
-input.LoadPdf("document.pdf");
-input.Deskew();
-input.DeNoise();
-var result = new IronTesseract().Read(input);
-```
+Any PDF rendering library added solely to support Tesseract PDF processing — PdfiumViewer, PDFtoImage, Docnet.Core — can be removed. The native binary dependencies those packages required (`pdfium.dll`, GhostScript binaries) also go away. Dockerfile `COPY` and `apt-get` lines for those dependencies are no longer needed. The [IronOCR PDF input guide](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/) covers every PDF input variation that those libraries handled, including page range selection and password-protected documents. The entire render-then-OCR block — typically 50-80 lines spanning three libraries — collapses to `input.LoadPdf(path)` followed by a single `Read()` call.
 
 ### Preprocessing Code Replacement
 
@@ -473,36 +463,13 @@ The existing preprocessing methods — `ConvertToGrayscale`, `EnhanceContrast`, 
 
 ### Thread Model Change
 
-Code that creates `TesseractEngine` inside a `Parallel.ForEach` loop — one per thread — changes to creating `IronTesseract` once before the loop and sharing it across all threads. This is a correctness change, not just a refactor: the old pattern was defensive programming around a thread-unsafe API; the new pattern is the intended usage of a thread-safe API.
-
-```csharp
-// Before: engine created per thread to avoid thread-safety issues
-Parallel.ForEach(files, file =>
-{
-    using var engine = new TesseractEngine(TessDataPath, "eng", EngineMode.Default);
-    using var img = Pix.LoadFromFile(file);
-    using var page = engine.Process(img);
-    results[file] = page.GetText();
-});
-
-// After: single instance shared safely across all threads
-var ocr = new IronTesseract();
-Parallel.ForEach(files, file =>
-{
-    using var input = new OcrInput();
-    input.LoadImage(file);
-    var result = ocr.Read(input);
-    results[file] = result.Text;
-});
-```
+Code that creates `TesseractEngine` inside a `Parallel.ForEach` loop — one per thread — changes to creating `IronTesseract` once before the loop and sharing it across all threads. This is a correctness change, not just a refactor: the old pattern was defensive programming around a thread-unsafe API; the new pattern is the intended usage of a thread-safe API. The per-thread engine initialization overhead — 40-100 MB of language model data per thread — disappears with the change because IronOCR maintains a shared internal pool rather than loading full model state per engine instance.
 
 ## Additional IronOCR Capabilities
 
 Beyond preprocessing and PDF support, IronOCR includes capabilities that extend well past the core comparison:
 
 - **Region-based OCR:** Extract text from a defined crop rectangle without processing the full image. The [region OCR guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/) and [crop example](https://ironsoftware.com/csharp/ocr/examples/net-tesseract-content-area-rectangle-crop/) cover invoice header extraction and form field isolation.
-- **Barcode reading during OCR:** A single configuration flag enables barcode detection in the same pass as text recognition. The [barcode reading guide](https://ironsoftware.com/csharp/ocr/how-to/barcodes/) and [barcode OCR example](https://ironsoftware.com/csharp/ocr/examples/csharp-ocr-barcodes/) show the pattern for documents containing both text and barcodes.
-- **Structured result access:** `result.Pages`, `result.Paragraphs`, `result.Lines`, and `result.Words` expose the full document hierarchy with per-element coordinates and confidence scores. The [read results guide](https://ironsoftware.com/csharp/ocr/how-to/read-results/) covers structured extraction patterns.
 - **Confidence-based quality routing:** `result.Confidence` provides a document-level accuracy estimate that enables routing low-confidence results to a human review queue without running OCR twice. See the [confidence scores guide](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/).
 - **Async OCR:** The [async OCR guide](https://ironsoftware.com/csharp/ocr/how-to/async/) covers non-blocking OCR for ASP.NET Core applications where blocking the request thread on a CPU-bound operation is unacceptable.
 - **Specialized document types:** [Passport reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/), [MICR/cheque reading](https://ironsoftware.com/csharp/ocr/how-to/read-micr-cheque/), and [license plate reading](https://ironsoftware.com/csharp/ocr/how-to/read-license-plate/) are available as targeted features without requiring custom trained models.
@@ -520,4 +487,4 @@ The preprocessing gap is the central trade-off. Roughly 180 lines of image manip
 
 IronOCR addresses both gaps directly: preprocessing is one-line method calls, PDF is a native input format, and the entire solution deploys as a single NuGet package. The $749 perpetual license is the cost of not spending two weeks on image processing code and dependency chain management. For teams where developer time costs more than $749, the math is straightforward. For teams with open-source license requirements or zero budget, Tesseract remains the path forward — with clear eyes about the engineering investment that comes with it.
 
-The decision maps cleanly to the document types and operational context: clean, controlled images in a single-environment deployment favor Tesseract's free license. Real-world scans, PDF workflows, multi-environment deployment, and parallel processing at scale each add friction that tilts the calculus toward IronOCR. Most production document processing systems encounter at least two of those conditions. For a full exploration of IronOCR's capabilities and implementation patterns, the [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) covers the complete feature set.
+The decision maps cleanly to the document types and operational context: clean, controlled images in a single-environment deployment favor Tesseract's free license. Real-world scans, PDF workflows, multi-environment deployment, and parallel processing at scale each add friction that tilts the calculus toward IronOCR. Most production document processing systems encounter at least two of those conditions.

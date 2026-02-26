@@ -604,7 +604,7 @@ IronOcr.License.LicenseKey = "YOUR-IRONOCR-KEY";
 
 ## Syncfusion OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify all Syncfusion OCR usage before making changes:
 
@@ -630,7 +630,7 @@ grep -r "tessdata" Dockerfile* docker-compose*.yml .
 
 Inventory the results before writing any code. Note which files contain OCR calls, which contain tessdata validation, and which pipeline definitions reference the tessdata folder.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Syncfusion.PDF.OCR.Net.Core`, `Syncfusion.Pdf.Net.Core`, and related packages from all `.csproj` files.
 2. Run `dotnet add package IronOcr` in each project that performs OCR.
@@ -648,7 +648,7 @@ Inventory the results before writing any code. Note which files contain OCR call
 14. Remove tessdata download steps from all CI/CD pipeline definitions.
 15. Remove tessdata `COPY` layers from all Dockerfiles.
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify that PDF OCR produces the expected text content on the same sample documents used before migration.
 - Verify that image OCR (JPG, PNG, BMP) works without any PDF conversion step.

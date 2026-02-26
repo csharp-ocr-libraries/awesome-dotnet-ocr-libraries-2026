@@ -156,8 +156,6 @@ Key characteristics:
 | Error handling | HTTP status codes + VeryfiApiException | Local .NET exceptions |
 | Language support | Limited | 125+ languages |
 | **Cost** | | |
-| 10,000 docs/month (annual) | ~$12,000/year | $0/year (after license) |
-| 50,000 docs/month (annual) | ~$60,000/year | $0/year |
 | Cost ceiling | None without contractual cap | License price |
 | Cost at high volume | Scales linearly | Flat |
 
@@ -326,8 +324,6 @@ Veryfi charges per document. The rate depends on document type and volume tier: 
 var response = await _client.ProcessDocumentAsync(bytes);
 ```
 
-Three-year total cost of ownership at 50,000 documents per month: $180,000. At 200,000 documents per month (with a volume discount to $0.08 per document): $576,000 over three years. These are operating costs that recur indefinitely.
-
 Hidden costs compound the total: rate limiting at HTTP 429 forces retry logic; API version changes require SDK updates; security review of the data processing agreement adds legal time; and overage charges appear when seasonal volume exceeds plan estimates.
 
 ### IronOCR Approach
@@ -457,11 +453,11 @@ Teams processing 25,000 or more documents per month typically find the IronOCR p
 
 ### Offline and Disconnected Environments
 
-Field service organizations, remote work sites, mobile expense capture apps, and air-gapped government environments share a common requirement: OCR must work without internet. Veryfi is architecturally incapable of satisfying this requirement—`ProcessDocumentAsync` fails without a network connection. IronOCR processes offline by design. A field technician running a mobile expense app, a manufacturing plant with a firewalled network, and a defense contractor in a SCIF can all run IronOCR without modification. The [Docker deployment guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) and [Linux deployment guide](https://ironsoftware.com/csharp/ocr/get-started/linux/) cover containerized environments where network egress is restricted.
+Field service organizations, remote work sites, mobile expense capture apps, and air-gapped government environments share a common requirement: OCR must work without internet. Veryfi is architecturally incapable of satisfying this requirement—every document processing call fails without a network connection. IronOCR processes offline by design. A field technician running a mobile expense app, a manufacturing plant with a firewalled network, and a defense contractor in a SCIF can all run IronOCR without modification. The [Docker deployment guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) and [Linux deployment guide](https://ironsoftware.com/csharp/ocr/get-started/linux/) cover containerized environments where network egress is restricted.
 
 ### Vendor Lock-In and Schema Dependency
 
-Veryfi's JSON response schema is proprietary. Every line of extraction code that reads `response.Vendor?.Name`, `response.Total`, `response.BankAccount?.RoutingNumber`, or `response.LineItems` is code that only works with Veryfi. Switching to a competing cloud API, or to an on-premise solution, requires rewriting all extraction logic. Organizations that negotiate multi-year contracts with Veryfi discover this dependency when pricing changes or the product roadmap shifts. IronOCR extraction logic reads from raw text using standard .NET Regex—portable, not coupled to any vendor's schema.
+Veryfi's JSON response schema is proprietary. Every line of extraction code that reads vendor name, total, routing number, or line item fields is code that only works with Veryfi. Switching to a competing cloud API, or to an on-premise solution, requires rewriting all extraction logic. Organizations that negotiate multi-year contracts with Veryfi discover this dependency when pricing changes or the product roadmap shifts. IronOCR extraction logic reads from raw text using standard .NET Regex—portable, not coupled to any vendor's schema.
 
 ## Common Migration Considerations
 
@@ -557,14 +553,13 @@ For invoice workflows that produce searchable PDF archives, IronOCR's `SaveAsSea
 
 Beyond the core comparison areas, IronOCR provides capabilities that are entirely outside Veryfi's scope:
 
-- **[125+ language support](https://ironsoftware.com/csharp/ocr/languages/):** Install language packs as NuGet packages—`IronOcr.Languages.Arabic`, `IronOcr.Languages.ChineseSimplified`, and 123 others—without tessdata folder management or native binary configuration
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Use `CropRectangle` to extract text from specific document zones (invoice header, total section, signature block) without processing the full page
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` to extract barcodes and QR codes in the same pass as text extraction—relevant for shipping documents and product receipts
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Structured table reading from documents with grid layouts, applicable to bank statements and itemized invoices
 - **[Handwriting recognition](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/):** Process handwritten notes, signatures, and handwritten form fields that Veryfi's pre-trained models are not designed to handle
 - **[MICR/cheque reading](https://ironsoftware.com/csharp/ocr/how-to/read-micr-cheque/):** Dedicated MICR line extraction for check processing workflows, keeping routing and account number extraction on-premise
 - **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Export OCR results as hOCR (HTML with position data) for downstream document analysis pipelines
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Monitor processing progress for long-running batch jobs without polling a remote API
+- **[Passport and ID reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Extract machine-readable zone data from passports and identity documents for onboarding and KYC workflows
+- **[AWS and Azure deployment](https://ironsoftware.com/csharp/ocr/get-started/aws/):** Deploy to cloud infrastructure while keeping document processing inside your own cloud account—no external SaaS data processor added to your compliance scope
 
 ## .NET Compatibility and Future Readiness
 
@@ -576,6 +571,6 @@ Veryfi solves a specific problem quickly: submit an expense document, receive st
 
 The four-credential authentication model, the async-only API, the rate limiting, the HTTP 402 payment failures that halt batch processing, and the proprietary JSON schema that couples all extraction logic to a single vendor—these are not edge-case concerns. They are daily operational realities for teams running Veryfi in production at scale.
 
-[IronOCR](https://ironsoftware.com/csharp/ocr/) requires writing extraction patterns that Veryfi handles automatically. That is a real development cost: expect 8–24 hours to build robust regex extraction for receipts and invoices, depending on document variety. But that investment is made once. The resulting code runs on your infrastructure, processes any document type, operates offline, and costs nothing per document. Bank statements, routing numbers, account numbers, and transaction histories never leave your server.
+IronOCR requires writing extraction patterns that Veryfi handles automatically. That is a real development cost: expect 8–24 hours to build regex extraction for receipts and invoices, depending on document variety. But that investment is made once. The resulting code runs on your infrastructure, processes any document type, operates offline, and costs nothing per document. Bank statements, routing numbers, account numbers, and transaction histories never leave your server.
 
 For teams in financial services, healthcare, defense contracting, or legal services—any domain where sending expense documents to a third-party cloud is a compliance conversation—the IronOCR path eliminates that conversation entirely. For teams currently spending $5,000–$20,000 per month on Veryfi, the arithmetic is straightforward. For teams that need general-purpose OCR beyond expense documents, the choice is clear: a cloud specialist or a local general-purpose library are not equivalent tools, and the one-time license cost of the latter buys unbounded flexibility that the former cannot provide at any per-document price.

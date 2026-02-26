@@ -632,7 +632,7 @@ The [progress tracking guide](https://ironsoftware.com/csharp/ocr/how-to/progres
 
 ## Tesseract.NET SDK Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase for all Tesseract.NET SDK usage before touching any code:
 
@@ -658,7 +658,7 @@ grep -c "OcrApi.Create" $(find . -name "*.cs")
 
 Document the count of `OcrApi.Create()` call sites — each is a candidate for singleton injection replacement. Note any `try/finally` disposal patterns for modernization. Identify any `Global.asax`, `Application_Start`, or static constructor initialization that will move to `Program.cs`.
 
-### Code Update Tasks
+### Code Migration
 
 1. Update `<TargetFramework>` to `net8.0` (or the target modern runtime) in all `.csproj` files
 2. Run `dotnet remove package Tesseract.Net.SDK` in each project
@@ -676,7 +676,7 @@ Document the count of `OcrApi.Create()` call sites — each is a candidate for s
 14. Replace `api.SetVariable("tessedit_char_whitelist", x)` with `ocr.Configuration.WhiteListCharacters = x`
 15. Delete tessdata folder from project, remove all deployment script references to tessdata
 
-### Post-Migration Testing
+### Post-Migration
 
 - Compile the project targeting `net8.0` and confirm no `Patagames` references remain in build output
 - Run the application on a Linux host or Linux Docker container and confirm no `DllNotFoundException`

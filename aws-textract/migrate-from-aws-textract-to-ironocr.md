@@ -14,7 +14,7 @@ AWS Textract is a capable managed service, but its architecture imposes costs �
 
 **No Internet Access Means No Textract.** Docker containers in isolated network segments, on-premise servers, air-gapped research environments, and industrial systems with outbound traffic restrictions all share one characteristic: Textract is unavailable. IronOCR installs as a NuGet package and operates without any network calls after the initial package download.
 
-**Data Leaves Your Infrastructure on Every Call.** Every OCR operation with Textract transmits document content to Amazon's servers. For healthcare organizations processing PHI, defense contractors handling CUI, legal teams processing privileged communications, and financial institutions processing payment card images, this is not a configuration option — it is an architectural constraint that may prohibit Textract entirely. IronOCR processes on your hardware. There is no cloud mode to disable; local processing is the only mode.
+**Data Leaves Your Infrastructure on Every Call.** Every OCR operation with Textract transmits document content to Amazon's servers. For healthcare organizations processing PHI, defense contractors handling CUI, legal teams processing privileged communications, and financial institutions processing payment card images, this is not a configuration option — it is an architectural constraint that prohibits Textract in regulated environments entirely. IronOCR processes on your hardware. There is no cloud mode to disable; local processing is the only mode.
 
 **Rate Limits Constrain Batch Throughput.** The default `StartDocumentTextDetection` TPS limit is 5 requests per second. Batch jobs processing hundreds of documents require `SemaphoreSlim` throttling, exponential backoff on `ProvisionedThroughputExceededException`, and rate-replenishment timers. Requesting a TPS increase requires a formal AWS support case with no guaranteed outcome. IronOCR processes as fast as the local CPU allows — a 16-core server processes 16 documents concurrently with a plain `Parallel.ForEach`, no service tier negotiation required.
 
@@ -73,7 +73,6 @@ The following table maps the capabilities of both libraries across the dimension
 | **Async Polling Required** | Yes (for all PDFs) | No — synchronous by default |
 | **Rate Limits** | 5 TPS default (StartDocumentTextDetection) | None — CPU-bound only |
 | **Per-Page Cost** | $0.0015–$0.065 per page | $0 after license purchase |
-| **Cost at 100K pages/month (tables)** | $18,000/year | $0/year (after $2,999 license) |
 | **Automatic Preprocessing** | Internal, not configurable | Deskew, DeNoise, Contrast, Binarize, Sharpen, Scale |
 | **Searchable PDF Output** | Not available | `result.SaveAsSearchablePdf()` |
 | **hOCR Export** | Not available | `result.SaveAsHocrFile()` |
@@ -911,7 +910,7 @@ Parallel.ForEach(imagePaths, path =>
 
 ## AWS Textract Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit all Textract and S3 SDK usage in the codebase:
 
@@ -933,7 +932,7 @@ Inventory the following before writing any replacement code:
 - Count all `ProvisionedThroughputExceededException` catch blocks — deleted, not replaced
 - Note all `BlockType.TABLE`, `BlockType.CELL`, `BlockType.KEY_VALUE_SET` traversal logic — each needs structured output replacement
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `AWSSDK.Textract`, `AWSSDK.S3`, and `AWSSDK.Core` from all `.csproj` files
 2. Run `dotnet add package IronOcr` in each project that performs OCR
@@ -952,7 +951,7 @@ Inventory the following before writing any replacement code:
 15. Remove all AWS credential environment variable configuration from deployment manifests and CI pipelines
 16. Decommission S3 staging buckets after all processing code is migrated and verified
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify the application starts cleanly with only `IRONOCR_LICENSE` set and all AWS environment variables removed
 - Run OCR on the same sample images previously processed by Textract and compare extracted text for accuracy

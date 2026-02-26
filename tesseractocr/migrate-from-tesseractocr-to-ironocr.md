@@ -562,7 +562,7 @@ Remove the identified files' references, then delete the preprocessing helper me
 
 ### Issue 6: `TesseractException` and `DllNotFoundException` Catch Blocks Become Unreachable
 
-**TesseractOCR:** Robust TesseractOCR integrations catch `TesseractOCR.Exceptions.TesseractException`, `DllNotFoundException` (for missing native binaries), and `BadImageFormatException` (for architecture mismatches). These exception types are defensive responses to the instability of tessdata and native binary deployment.
+**TesseractOCR:** Production TesseractOCR integrations catch `TesseractOCR.Exceptions.TesseractException`, `DllNotFoundException` (for missing native binaries), and `BadImageFormatException` (for architecture mismatches). These exception types are defensive responses to the instability of tessdata and native binary deployment.
 
 **Solution:** IronOCR bundles native dependencies and manages initialization internally. `DllNotFoundException` and `BadImageFormatException` do not apply. Remove those catch blocks. The exception surface reduces to `IronOcr.Exceptions.OcrException` for OCR failures and standard `IOException` for file access problems.
 
@@ -580,7 +580,7 @@ catch (IOException ex) { ... }
 
 ## TesseractOCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit all TesseractOCR usage points in the codebase:
 
@@ -602,7 +602,7 @@ grep -rn "tessdata" Dockerfile 2>/dev/null || true
 
 Document current accuracy baseline on a representative sample of documents before migration so post-migration quality can be verified.
 
-### Code Update Tasks
+### Code Migration
 
 1. Run `dotnet remove package TesseractOCR`
 2. Run `dotnet remove package Docnet.Core` (if present)
@@ -623,7 +623,7 @@ Document current accuracy baseline on a representative sample of documents befor
 17. Update catch blocks — remove `TesseractException`, `DllNotFoundException`, `BadImageFormatException`
 18. Remove tessdata folder from project output directory configuration and Docker images
 
-### Post-Migration Testing
+### Post-Migration
 
 - Confirm `dotnet build` produces zero compiler errors and zero unreachable-catch warnings
 - Run OCR against the pre-migration accuracy baseline sample and compare results

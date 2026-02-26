@@ -367,7 +367,7 @@ The thread restriction surfaces as a hard blocker for most production .NET workl
 
 ### The Deployment Complexity Tax
 
-Teams operating in modern deployment environments — Docker containers, Linux VMs, Kubernetes pods — pay an ongoing maintenance cost with Asprise that does not exist with pure NuGet packages. Every container image build must include the correct native binary for the target architecture. Every CI/CD pipeline that targets multiple platforms must handle platform-specific file inclusion. A `DllNotFoundException` on a production Linux container is a runtime discovery, not a build-time error. Teams that have spent hours debugging `BadImageFormatException` (32-bit DLL loaded into a 64-bit process) understand the cost concretely. IronOCR's NuGet-only deployment eliminates this entire category of deployment failure.
+Teams operating in modern deployment environments — Docker containers, Linux VMs, Kubernetes pods — pay an ongoing maintenance cost with Asprise that does not exist with pure NuGet packages. Every container image build must include the correct native binary for the target architecture. Every CI/CD pipeline that targets multiple platforms must handle platform-specific file inclusion. A missing native library on a production Linux container is a runtime discovery, not a build-time error. Teams that have spent hours debugging a 32-bit DLL loaded into a 64-bit process understand the cost concretely. IronOCR's NuGet-only deployment eliminates this entire category of deployment failure.
 
 ### The Java Documentation Problem
 
@@ -458,4 +458,4 @@ The threading restriction deserves particular weight. The two most affordable As
 
 Deployment complexity is the second practical concern. Teams running Docker containers, Linux builds, or cross-platform CI/CD pipelines must manage platform-specific native binaries with Asprise. Those failures — `DllNotFoundException`, `BadImageFormatException` — appear at runtime on target infrastructure, not at build time. IronOCR deploys through standard NuGet package management, and the package selection mechanism handles platform-specific binaries internally. The deployment surface is a single NuGet reference.
 
-For .NET teams starting a new OCR integration, the starting point is clear: a single `dotnet add package IronOcr`, a one-line license key assignment, and `new IronTesseract().Read("document.jpg").Text` for the first result. No engine initialization, no native binary sourcing, no threading license audit. The [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) covers the full feature set from that starting point.
+For .NET teams starting a new OCR integration, the starting point is clear: a single `dotnet add package IronOcr`, a one-line license key assignment, and `new IronTesseract().Read("document.jpg").Text` for the first result. No engine initialization, no native binary sourcing, no threading license audit.

@@ -902,7 +902,7 @@ The [PDF input guide](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/) co
 
 ## TesseractOcrMaui Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to inventory all TesseractOcrMaui usage before changing any code:
 
@@ -934,7 +934,7 @@ grep -r "net8.0-android\|net8.0-ios\|net8.0-windows" --include="*.csproj" .
 
 Note every class that takes `ITesseract` in a constructor — those constructors will change. Note every project file that declares `<MauiAsset>` for traineddata — those declarations will be deleted. Identify whether a PDF rendering library is present and whether it is used exclusively for OCR preprocessing.
 
-### Code Update Tasks
+### Code Migration
 
 1. Run `dotnet remove package TesseractOcrMaui` in every project that references it
 2. Run `dotnet add package IronOcr` in every project that will perform OCR
@@ -954,7 +954,7 @@ Note every class that takes `ITesseract` in a constructor — those constructors
 16. If a PDF rendering library was added solely to support TesseractOcrMaui, remove it and replace page-extraction code with `input.LoadPdf()`
 17. Change any MAUI-only target framework in class libraries that held OCR logic to `net8.0` or `netstandard2.1`
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify that OCR produces text from a JPEG image captured by the device camera on both iOS and Android targets
 - Verify that OCR produces text from the same image loaded via `byte[]` in the server-side API endpoint

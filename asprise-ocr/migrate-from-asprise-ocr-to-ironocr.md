@@ -523,7 +523,7 @@ Parallel.ForEach(documentPaths, path =>
 
 ## Asprise OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase for all Asprise usage before writing any replacement code:
 
@@ -554,7 +554,7 @@ Inventory the results:
 - Note any license tier guards or serialization wrappers — these are removable
 - Locate native binary deployment scripts and container configuration
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove the `asprise-ocr-api` NuGet package from all projects
 2. Install `IronOcr` NuGet package in each project that performs OCR
@@ -572,7 +572,7 @@ Inventory the results:
 14. Replace string language codes (`"eng"`, `"eng+fra"`) with `OcrLanguage` enum values
 15. Replace `result.StartsWith("ERROR:")` checks with `try/catch` blocks
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify `dotnet build` completes with zero warnings about missing native libraries
 - Confirm no `DllNotFoundException` or `BadImageFormatException` occurs on startup in all target environments (Windows, Linux, Docker)

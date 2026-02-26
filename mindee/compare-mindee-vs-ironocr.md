@@ -1,4 +1,4 @@
-Every invoice processed by Mindee transmits bank account numbers, IBAN codes, routing numbers, vendor tax IDs, and itemized line items to external servers — and that transmission is not a configuration option you can disable. It is the product. Mindee is a cloud-based document intelligence API purpose-built for financial documents: invoices, receipts, passports, and bank statements. For teams where that data flow is acceptable, Mindee delivers genuinely impressive structured parsing with minimal code. For teams handling customer-submitted financial documents, processing under HIPAA, GLBA, or data residency requirements, or simply running high volumes where per-page pricing adds up fast, the architecture creates a problem no compliance checkbox fully resolves. This comparison examines what Mindee does well, where its design creates real constraints, and how [IronOCR](https://ironsoftware.com/csharp/ocr/) compares across data privacy, document scope, cost model, and API pattern.
+Every invoice processed by Mindee transmits bank account numbers, IBAN codes, routing numbers, vendor tax IDs, and itemized line items to external servers — and that transmission is not a configuration option you can disable. It is the product. Mindee is a cloud-based document intelligence API purpose-built for financial documents: invoices, receipts, passports, and bank statements. For teams where that data flow is acceptable, Mindee delivers genuinely impressive structured parsing with minimal code. For teams handling customer-submitted financial documents, processing under HIPAA, GLBA, or data residency requirements, or simply running high volumes where per-page pricing adds up fast, the architecture creates a problem no compliance checkbox fully resolves. [IronOCR](https://ironsoftware.com/csharp/ocr/) addresses those constraints directly: local processing, zero data transmission, perpetual licensing, and generalist document coverage under one NuGet package.
 
 ## Understanding Mindee
 
@@ -121,7 +121,6 @@ Key characteristics of IronOCR:
 | Word/line coordinates | No | Yes |
 | **Pricing** | | |
 | Starting price | $49/month (1,000 pages) | $749 one-time |
-| 3-year TCO (5K pages/month) | ~$17,964 | $1,499–$2,999 |
 | Volume scaling cost | Linear per page | None |
 | Development/test pages | Count against quota | Unlimited |
 | **Technical** | | |
@@ -566,7 +565,6 @@ Moving from Mindee removes the network egress requirements, API key rotation pro
 Beyond the comparison areas covered above, IronOCR provides capabilities that extend well past invoice and receipt processing:
 
 - **[Searchable PDF generation](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** `result.SaveAsSearchablePdf("output.pdf")` embeds recognized text into scanned PDFs, making them full-text searchable without any additional library
-- **[125+ language support](https://ironsoftware.com/csharp/ocr/languages/):** Language packs install as NuGet packages; Arabic, Chinese, Japanese, Korean, and Cyrillic script languages are all available with no tessdata folder management
 - **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` to detect and decode barcodes in the same pass that reads document text — useful for invoices with QR codes or tracking barcodes
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Word-level positional data in `result.Words` enables column detection and tabular reconstruction from unstructured document scans
 - **[Handwriting recognition](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/):** IronOCR handles handwritten text fields on forms — a category Mindee explicitly does not support without custom model training

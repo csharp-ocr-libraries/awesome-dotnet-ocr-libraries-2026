@@ -335,7 +335,7 @@ The [searchable PDF feature](https://ironsoftware.com/csharp/ocr/how-to/searchab
 
 ### The Application Outgrows Windows Desktop
 
-The most common trigger is a requirement change that introduces a non-Windows deployment target. A desktop utility that starts life as an internal Windows tool gets promoted to a web service, a Docker-based microservice, or a cloud function. The moment that happens, Windows.Media.Ocr becomes a blocker. The OCR component requires a full rewrite because the API does not exist on the target platform — there is no port, no compatibility shim, and no `#if` conditional that fixes the issue. Teams who planned ahead with IronOCR do not face this rewrite.
+The most common trigger is a requirement change that introduces a non-Windows deployment target. A desktop utility that starts life as an internal Windows tool gets promoted to a web service, a Docker-based microservice, or a cloud function. The moment that happens, Windows.Media.Ocr becomes a blocker. The OCR component requires a full rewrite because the API does not exist on the target platform — there is no port, no compatibility shim, and no conditional compilation flag that fixes the issue. Teams who planned ahead with IronOCR do not face this rewrite.
 
 ### Language Requirements Exceed Installed Packs
 
@@ -389,13 +389,9 @@ Windows.Media.Ocr requires null-checking every engine creation call. IronOCR thr
 
 Beyond the features that directly replace Windows.Media.Ocr functionality, IronOCR covers capabilities that Windows.Media.Ocr has no equivalent for:
 
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/)** — set `ocr.Configuration.ReadBarCodes = true` to detect and decode barcodes in the same pass as text recognition; results appear in `result.Barcodes`
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/)** — pass a `CropRectangle` to `input.LoadImage` to restrict recognition to a defined area of the document, improving speed and accuracy for structured forms
-- **[Confidence scores](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/)** — `result.Confidence` provides an overall quality score; `word.Confidence` gives per-word certainty for downstream filtering and validation workflows
 - **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/)** — purpose-built handling for multi-page scanned archives including TIFF and multi-page PDF inputs
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/)** — structured detection of tabular data within documents for invoice line items, report grids, and form matrices
 - **[Specialized document types](https://ironsoftware.com/csharp/ocr/features/specialized/)** — passport MRZ zones, MICR cheque lines, license plates, and handwritten text each have dedicated processing paths
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/)** — `result.SaveAsHocrFile` produces an hOCR HTML file with word-level bounding box data for downstream layout analysis tools
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/)** — batch operations report progress via events, enabling progress bars and processing rate monitoring in application UIs
 
 ## .NET Compatibility and Future Readiness
@@ -408,6 +404,6 @@ Windows.Media.Ocr occupies a specific and legitimate niche: a Windows 10/11 desk
 
 The deeper issue is that Windows.Media.Ocr's limitations are architectural, not incidental. Platform lock-in is not a configuration flag to turn off; it is baked into the WinRT runtime that the API depends on. Language availability is not a bundle to include at build time; it is delegated to OS administrators. PDF support is not a missing feature to add with a NuGet package; it is absent from the API surface entirely. Each limitation requires a separate system to compensate for it, and each compensating system reintroduces platform dependencies.
 
-[IronOCR](https://ironsoftware.com/csharp/ocr/) addresses all four constraints — platform, language, preprocessing, and PDF — in a single package. The $749 entry price is not $0, and for a Windows-only desktop utility with controlled input and English-only documents, Windows.Media.Ocr remains a valid choice. For any project with broader requirements, the cost of building around Windows.Media.Ocr's constraints exceeds $749 in developer hours well before the project reaches its first production deployment.
+IronOCR addresses all four constraints — platform, language, preprocessing, and PDF — in a single package. The $749 entry price is not $0, and for a Windows-only desktop utility with controlled input and English-only documents, Windows.Media.Ocr remains a valid choice. For any project with broader requirements, the cost of building around Windows.Media.Ocr's constraints exceeds $749 in developer hours well before the project reaches its first production deployment.
 
-The practical test is straightforward: if the deployment target could ever be Linux, Docker, or a cloud function, and if input documents could ever be PDFs or arrive in languages beyond the default OS pack, Windows.Media.Ocr is the wrong foundation. Discovering that mid-project is considerably more expensive than choosing the right tool at the start. Explore the [IronOCR tutorials](https://ironsoftware.com/csharp/ocr/tutorials/) to evaluate whether the feature set matches your specific requirements before committing either direction.
+The practical test is straightforward: if the deployment target could ever be Linux, Docker, or a cloud function, and if input documents could ever be PDFs or arrive in languages beyond the default OS pack, Windows.Media.Ocr is the wrong foundation. Discovering that mid-project is considerably more expensive than choosing the right tool at the start. Evaluating the IronOCR feature set against your specific requirements before committing either direction is the most efficient way to make that determination.

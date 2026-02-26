@@ -1,6 +1,6 @@
 # Migrating from Charlesw Tesseract to IronOCR
 
-This guide walks .NET developers through migrating from the `charlesw/tesseract` NuGet package (`Tesseract`) to [IronOCR](https://ironsoftware.com/csharp/ocr/). The migration narrative centers on one specific problem: the native binary deployment model that the charlesw wrapper imposes and the platform-conditional code that model forces you to write. If your team has fought `DllNotFoundException` in CI, wrestled with Leptonica library paths on Linux, or written OS-detection blocks that have nothing to do with OCR, this guide shows what disappears when you switch.
+This guide walks .NET developers through migrating from the `charlesw/tesseract` NuGet package (`Tesseract`) to [IronOCR](https://ironsoftware.com/csharp/ocr/). The migration centers on one specific problem: the native binary deployment model that the charlesw wrapper imposes and the platform-conditional code that model forces developers to write. Teams that have fought `DllNotFoundException` in CI, wrestled with Leptonica library paths on Linux, or written OS-detection blocks that have nothing to do with OCR will find this guide shows exactly what disappears after switching.
 
 ## Why Migrate from Charlesw Tesseract
 
@@ -433,7 +433,7 @@ No `apt-get install libleptonica-dev` required. No `<CopyToOutputDirectory>` ent
 
 ### Issue 2: Tessdata Path Errors After Deployment
 
-**Charlesw Tesseract:** `Tesseract.TesseractException: Failed to initialise tesseract engine.` This fires when `TessDataPath` does not resolve at runtime. It compiles without error, fails only at runtime, and the failure path depends on which environment you deploy to.
+**Charlesw Tesseract:** `Tesseract.TesseractException: Failed to initialise tesseract engine.` This fires when `TessDataPath` does not resolve at runtime. It compiles without error, fails only at runtime, and the failure path depends on the deployment environment.
 
 **Solution:** The tessdata path concept does not exist in IronOCR. Delete the constant, delete the `CopyToOutputDirectory` XML in `.csproj`, and delete the factory method that builds it. Language data is distributed as NuGet packages:
 
@@ -512,7 +512,7 @@ The [async OCR guide](https://ironsoftware.com/csharp/ocr/how-to/async/) covers 
 
 ## Charlesw Tesseract Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify all patterns that will change:
 
@@ -544,7 +544,7 @@ grep -rn "tessdata" --include="*.csproj" .
 
 Note which deployment environments the project targets (Docker, Linux, ARM64, Azure, AWS) — these are the environments where charlesw/tesseract requires the most configuration that IronOCR eliminates.
 
-### Code Update Tasks
+### Code Migration
 
 1. Run `dotnet remove package Tesseract` to uninstall the charlesw wrapper
 2. Run `dotnet add package IronOcr` to install IronOCR
@@ -562,7 +562,7 @@ Note which deployment environments the project targets (Docker, Linux, ARM64, Az
 14. Replace `iter.GetConfidence()` threshold logic with LINQ on `result.Words` or `result.Lines`
 15. Remove `libleptonica-dev` / `leptonica-1.82.0.dll` from Dockerfiles and deployment scripts
 
-### Post-Migration Testing
+### Post-Migration
 
 Verify the following after completing code updates:
 

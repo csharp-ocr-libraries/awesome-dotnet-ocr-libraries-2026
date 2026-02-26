@@ -319,7 +319,7 @@ foreach (var page in result.Pages)
 
 ### Removing Error Handling and Retry Infrastructure
 
-Klippa integration over HTTP requires comprehensive error handling for every failure mode a network call can produce: timeouts, 4xx responses, 5xx responses, rate limits, and partial JSON. Teams running production integrations add retry policies using Polly or custom logic. That infrastructure disappears when the network call disappears.
+Klippa integration over HTTP requires error handling for every failure mode a network call can produce: timeouts, 4xx responses, 5xx responses, rate limits, and partial JSON. Teams running production integrations add retry policies using Polly or custom logic. That infrastructure disappears when the network call disappears.
 
 **Klippa Approach:**
 
@@ -608,7 +608,7 @@ The [image quality correction guide](https://ironsoftware.com/csharp/ocr/how-to/
 
 ## Klippa OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit your codebase to locate all Klippa-specific code before removing anything:
 
@@ -637,7 +637,7 @@ Inventory notes:
 - Document all field mappings that consume Klippa's pre-parsed JSON properties
 - Note any Polly retry policies or custom retry loops built for Klippa
 
-### Code Update Tasks
+### Code Migration
 
 1. Install `IronOcr` NuGet package (`dotnet add package IronOcr`)
 2. Add `IronOcr.License.LicenseKey = "YOUR-LICENSE-KEY"` to application startup
@@ -654,7 +654,7 @@ Inventory notes:
 13. Replace HTTP mock test infrastructure with real document fixture tests
 14. Delete Polly retry policies or custom retry middleware scoped to Klippa calls
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify text extraction output matches expected content from known test documents
 - Confirm confidence scores exceed acceptable threshold (typically 70%+) for production document types

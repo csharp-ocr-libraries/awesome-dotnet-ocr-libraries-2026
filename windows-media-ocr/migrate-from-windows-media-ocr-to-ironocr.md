@@ -262,7 +262,6 @@ public async Task<string> RecognizeMultiLanguageAsync(SoftwareBitmap bitmap)
 public string RecognizeMultiLanguage(string documentPath)
 {
     var ocr = new IronTesseract();
-    ocr.Language = OcrLanguage.English;
     ocr.Language = OcrLanguage.English + OcrLanguage.French + OcrLanguage.German;
 
     var result = ocr.Read(documentPath);
@@ -604,7 +603,7 @@ input.LoadImage(imageBytes);
 
 ## Windows.Media.Ocr (UWP/WinRT OCR) Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase before making changes:
 
@@ -629,7 +628,7 @@ grep -rl "Windows.Media.Ocr\|Windows.Graphics.Imaging\|SoftwareBitmap" --include
 
 Record the number of files affected, the language tags in use (`"en-US"`, `"fr-FR"`, etc.), and whether any WinRT types appear in public method signatures (these require API surface changes in addition to internal rewrites).
 
-### Code Update Tasks
+### Code Migration
 
 1. Install the `IronOcr` NuGet package: `dotnet add package IronOcr`
 2. Add the license initialization call in `Program.cs` or `Startup.cs`: `IronOcr.License.LicenseKey = "YOUR-LICENSE-KEY";`
@@ -648,7 +647,7 @@ Record the number of files affected, the language tags in use (`"en-US"`, `"fr-F
 15. Replace Windows BCP-47 language tag strings with `OcrLanguage` enum values; install required language NuGet packages
 16. Update `<TargetFramework>` in `.csproj` files to remove the `-windowsX.Y.Z` suffix where no other WinRT APIs remain
 
-### Post-Migration Testing
+### Post-Migration
 
 - Confirm the project compiles targeting `net8.0` (or your target version) without the Windows TFM suffix
 - Confirm the project compiles and runs on a Linux environment or Docker container using `mcr.microsoft.com/dotnet/aspnet:8.0`

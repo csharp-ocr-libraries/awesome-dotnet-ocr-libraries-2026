@@ -15,7 +15,7 @@ Key architectural characteristics:
 - **Python-first release cadence:** New PaddleOCR model versions appear in Python first; .NET wrapper updates follow weeks to months later
 - **14 supported languages:** Chinese Simplified, Chinese Traditional, English, French, German, Korean, Japanese, Italian, Spanish, Portuguese, Russian, Arabic, Hindi, and Tamil — a hard ceiling
 
-The NuGet package has approximately 200,000 downloads, compared to 5.3 million for IronOCR and 8 million for the most popular Tesseract wrapper. The smaller footprint means fewer Stack Overflow answers, fewer battle-tested production reports, and a thinner pool of developers who can answer questions from experience.
+The NuGet package has approximately 200,000 downloads. The smaller footprint means fewer Stack Overflow answers, fewer battle-tested production reports, and a thinner pool of developers who can answer questions from experience.
 
 ### The Three-Model Pipeline in Practice
 
@@ -147,7 +147,7 @@ CJK accuracy is PaddleOCR's genuine strength. For Chinese Simplified documents, 
 The Chinese model pipeline performs well because the detection and recognition networks were trained on large-scale Chinese document datasets by Baidu, whose core business involves processing Chinese web content at scale.
 
 ```csharp
-// Chinese model: best-in-class for CJK documents
+// Chinese model: highest accuracy for CJK documents
 FullOcrModel models = await OnlineFullModels.ChineseV4.DownloadAsync();
 
 using PaddleOcrAll ocr = new PaddleOcrAll(models)
@@ -201,7 +201,7 @@ foreach (var word in result.Words)
 }
 ```
 
-For teams that need [multiple languages simultaneously](https://ironsoftware.com/csharp/ocr/how-to/ocr-multiple-languages/) — such as mixed Chinese/English documents — IronOCR handles the combination with `AddSecondaryLanguage`. PaddleOCR requires switching model sets between languages, which means separate `DownloadAsync()` calls and separate `PaddleOcrAll` instances.
+For teams that need [multiple languages simultaneously](https://ironsoftware.com/csharp/ocr/how-to/ocr-multiple-languages/) — such as mixed Chinese/English documents — IronOCR handles the combination with `AddSecondaryLanguage`. PaddleOCR requires switching model sets between languages, which means separate download calls and separate engine instances.
 
 The trade-off is specific: PaddleOCR wins on pure CJK accuracy. IronOCR wins on English/Latin accuracy (97-99% vs. 92-95%), preprocessing for poor-quality scans, and the operational simplicity of not managing model files. Teams processing documents in a mix of languages, or primarily processing European-language documents with occasional CJK content, will find IronOCR's accuracy profile more useful in aggregate. See the [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) for multi-language and preprocessing examples.
 
@@ -241,7 +241,7 @@ The model version must match the wrapper version. When `Sdcb.PaddleOCR` updates,
 
 ### IronOCR Approach
 
-IronOCR language models are standard NuGet packages. No `DownloadAsync()` call, no model directory management, no version synchronization. The [NuGet package](https://www.nuget.org/packages/IronOcr) for IronOCR includes the English model; additional language packs install exactly like any other dependency.
+IronOCR language models are standard NuGet packages. No download calls, no model directory management, no version synchronization. The [NuGet package](https://www.nuget.org/packages/IronOcr) for IronOCR includes the English model; additional language packs install exactly like any other dependency.
 
 ```csharp
 // dotnet add package IronOcr
@@ -331,7 +331,7 @@ The [image quality correction guide](https://ironsoftware.com/csharp/ocr/how-to/
 
 ## PDF Processing
 
-PaddleOCR has no native PDF support. Every PDF processed through PaddleOCR requires an external library to convert pages to images first, temp file management between conversion and inference, and cleanup logic. The migration comparison file shows the pattern clearly:
+PaddleOCR has no native PDF support. Every PDF processed through PaddleOCR requires an external library to convert pages to images first, temp file management between conversion and inference, and cleanup logic.
 
 ### PaddleOCR Approach
 
@@ -440,31 +440,31 @@ Password-protected PDFs use the same `LoadPdf` path with a `Password` parameter.
 
 ### When Language Requirements Expand Beyond 14
 
-A project begins processing Chinese invoices — PaddleOCR handles it well. Then the customer base expands and documents arrive in Polish, Dutch, Greek, Vietnamese, and Turkish. PaddleOCR's 14 supported languages do not cover any of these. The migration becomes necessary because the tool cannot grow with the use case. IronOCR's 125+ languages install as NuGet packages; adding Polish support is `dotnet add package IronOcr.Languages.Polish` and a one-line config change. Teams that scope a project as "initially Chinese-heavy but eventually multi-regional" need to decide upfront whether to start with a tool that can scale language coverage without a rewrite.
+A project begins processing Chinese invoices — PaddleOCR handles it well. Then the customer base expands and documents arrive in Polish, Dutch, Greek, Vietnamese, and Turkish. PaddleOCR's 14 supported languages do not cover any of these. The migration becomes necessary because the tool cannot grow with the use case. Adding Polish support in IronOCR is a single NuGet package addition and a one-line config change. Teams that scope a project as "initially Chinese-heavy but eventually multi-regional" need to decide upfront whether to start with a tool that can scale language coverage without a rewrite.
 
 ### When the Setup Cost Exceeds the Problem Budget
 
-The README for PaddleOCR estimates first-time setup at 30-60 minutes for CPU, 2-8 hours for GPU. Developer rate at $100/hour means the first GPU configuration attempt costs $200-800 before the first production image is processed. IronOCR setup is `dotnet add package IronOcr` and a four-line code sample — under five minutes. For internal tools, prototypes, or projects where OCR is a secondary feature rather than the core product, that time difference determines whether the OCR feature ships in the current sprint or gets deprioritized. [Getting started with IronOCR](https://ironsoftware.com/csharp/ocr/how-to/iron-tesseract/) takes less time than configuring a CUDA environment.
+The PaddleOCR documentation estimates first-time setup at 30-60 minutes for CPU and 2-8 hours for GPU. Developer time at $100/hour means the first GPU configuration attempt costs $200-800 before the first production image is processed. IronOCR setup is a single install command and a four-line code sample — under five minutes. For internal tools, prototypes, or projects where OCR is a secondary feature rather than the core product, that time difference determines whether the OCR feature ships in the current sprint or gets deprioritized. Getting started with IronOCR takes less time than configuring a CUDA environment.
 
 ### When PDF Workflows Dominate
 
-Organizations digitizing scanned document archives, processing fax-to-PDF pipelines, or extracting data from PDF-format invoices and contracts face a structural problem with PaddleOCR: every PDF requires an additional library, manual page rendering, temp file management, and DPI selection logic before PaddleOCR can process it. That is not incidental complexity — it is permanent maintenance. Teams that discover their workload is 80%+ PDF-based after initial PaddleOCR integration typically migrate when the PDF conversion layer becomes a source of bugs (temp file leaks, incorrect DPI, partial page renders) rather than when PaddleOCR itself fails.
+Organizations digitizing scanned document archives, processing fax-to-PDF pipelines, or extracting data from PDF-format invoices and contracts face a structural problem with PaddleOCR: every PDF requires an additional library, manual page rendering, temp file management, and DPI selection logic before PaddleOCR can process it. That is not incidental complexity — it is permanent maintenance. Teams that discover their workload is 80%+ PDF-based after initial PaddleOCR integration typically migrate when the PDF conversion layer becomes a source of bugs rather than when PaddleOCR itself fails.
 
 ### When Compliance Reviews Flag the Baidu Origin
 
-Enterprise security teams in government, defense, healthcare, and financial services organizations increasingly apply review criteria to components with origins in Chinese-state-connected companies. PaddleOCR is a Baidu project; model downloads connect to `bj.bcebos.com` (Baidu Cloud Storage) by default; the PaddlePaddle framework is a Baidu product. The code runs locally and documents are not transmitted, but the model artifacts originate from Baidu infrastructure. For FedRAMP, ITAR, or CMMC environments, that provenance may trigger a compliance review that effectively blocks adoption. IronOCR is a product of Iron Software, a US-based company, processes all content locally, makes no external connections, and requires no model downloads from any third-party server.
+Enterprise security teams in government, defense, healthcare, and financial services organizations increasingly apply review criteria to components with origins in Chinese-state-connected companies. PaddleOCR is a Baidu project; model downloads connect to Baidu Cloud Storage by default; the PaddlePaddle framework is a Baidu product. The code runs locally and documents are not transmitted, but the model artifacts originate from Baidu infrastructure. For FedRAMP, ITAR, or CMMC environments, that provenance triggers a compliance review that can block adoption. IronOCR is a product of Iron Software, a US-based company, processes all content locally, makes no external connections, and requires no model downloads from any third-party server.
 
-### When GPU Infrastructure is Not in Place
+### When GPU Infrastructure Is Not in Place
 
-PaddleOCR on CPU (300-500ms/image, 3-5 second cold start, 500MB-1GB memory) is slower and heavier than IronOCR on CPU (150-300ms/image, under 1 second cold start, 100-200MB memory). The GPU advantage of PaddleOCR only materializes after CUDA/cuDNN setup, and that advantage only justifies the operational complexity at high volume (the README estimates >1,000 images/day as the threshold). Teams running standard cloud infrastructure without GPU instances — EC2 without GPU, Azure App Service, AWS Lambda — are paying the PaddleOCR setup cost without receiving the performance benefit that justifies it.
+PaddleOCR on CPU (300-500ms/image, 3-5 second cold start, 500MB-1GB memory) is slower and heavier than IronOCR on CPU (150-300ms/image, under 1 second cold start, 100-200MB memory). The GPU advantage of PaddleOCR only materializes after CUDA/cuDNN setup, and that advantage only justifies the operational complexity at high volume. Teams running standard cloud infrastructure without GPU instances — EC2 without GPU, Azure App Service, AWS Lambda — are paying the PaddleOCR setup cost without receiving the performance benefit that justifies it.
 
 ## Common Migration Considerations
 
 ### Package and Namespace Replacement
 
-The package swap removes five dependencies and adds one. In the `.csproj` file, remove `Sdcb.PaddleOCR`, `Sdcb.PaddleOCR.Models.Online`, the `Sdcb.PaddleInference.runtime.*` package, `OpenCvSharp4`, and `OpenCvSharp4.runtime.win`. Add `IronOcr`. Add language packs as NuGet packages for any non-English language that was previously using a downloaded model set.
+The package swap removes five dependencies and adds one. Remove `Sdcb.PaddleOCR`, `Sdcb.PaddleOCR.Models.Online`, the `Sdcb.PaddleInference.runtime.*` package, `OpenCvSharp4`, and `OpenCvSharp4.runtime.win` from the `.csproj`. Add `IronOcr`. Add language packs as NuGet packages for any non-English language that was previously using a downloaded model set.
 
-The `using Sdcb.PaddleOCR` and `using OpenCvSharp` directives replace with `using IronOcr`. The `Mat mat = Cv2.ImRead(path)` pattern replaces with `new OcrInput(path)` or `input.LoadImage(path)`. The `ocr.Run(mat)` call becomes `ocr.Read(input)`. For projects using the [image input API](https://ironsoftware.com/csharp/ocr/how-to/input-images/), the `OcrInput` object accepts file paths, byte arrays, streams, and `System.Drawing.Bitmap` — the OpenCvSharp `Mat` intermediary disappears entirely.
+The `using Sdcb.PaddleOCR` and `using OpenCvSharp` directives replace with `using IronOcr`. The `Mat mat = Cv2.ImRead(path)` pattern replaces with `new OcrInput(path)` or `input.LoadImage(path)`. The `ocr.Run(mat)` call becomes `ocr.Read(input)`. For projects using the [image input API](https://ironsoftware.com/csharp/ocr/how-to/input-images/), the `OcrInput` object accepts file paths, byte arrays, streams, and `System.Drawing.Bitmap` — the OpenCvSharp intermediary disappears entirely.
 
 ### Result Structure Remapping
 
@@ -474,7 +474,7 @@ Spatial sorting (order by Y then X to approximate reading order) is less commonl
 
 ### Preprocessing Transition
 
-PaddleOCR's deep learning detection model tolerates moderate image quality degradation — the neural network is more robust to noise and skew than Tesseract's classical segmentation pipeline. When migrating to IronOCR, add explicit preprocessing for documents that were previously processed successfully without it:
+PaddleOCR's deep learning detection model tolerates moderate image quality degradation — the neural network handles noise and skew more reliably than Tesseract's classical segmentation pipeline. When migrating to IronOCR, add explicit preprocessing for documents that were previously processed successfully without it:
 
 ```csharp
 using IronOcr;
@@ -499,7 +499,7 @@ For scanned documents at non-standard angles or with background noise, these fou
 
 ### Deployment Cleanup
 
-After migration, the deployment artifact shrinks significantly. Delete the `models/` directory tree (three subdirectories, ~21MB of model files), `paddle_inference.dll` (~200MB), `paddle2onnx.dll` (~5MB), and the `opencv_world*.dll` files (~50MB combined). Remove the `apt-get install libopencv-dev` line from the Dockerfile and the model-copy step (`COPY models/ /app/models/`). Remove any CI/CD steps that pre-download models or cache model directories. The Docker image drops from ~1.5GB to ~400MB.
+After migration, the deployment artifact shrinks significantly. Delete the `models/` directory tree (three subdirectories, ~21MB of model files), `paddle_inference.dll` (~200MB), `paddle2onnx.dll` (~5MB), and the `opencv_world*.dll` files (~50MB combined). Remove the `apt-get install libopencv-dev` line from the Dockerfile and the model-copy step. Remove any CI/CD steps that pre-download models or cache model directories. The Docker image drops from ~1.5GB to ~400MB.
 
 ## Additional IronOCR Capabilities
 
@@ -508,23 +508,22 @@ Beyond the comparison points covered above, IronOCR provides features that exten
 - **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` and barcodes on the same document are decoded alongside text in a single pass — no separate barcode library needed
 - **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Use `CropRectangle` to target specific document zones (invoice number field, header row, signature block) without processing the full page
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Full async/await support for non-blocking integration in ASP.NET controllers and background services
-- **[Confidence scores](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Document-level and word-level confidence enables quality gating — reject or flag low-confidence results for human review
+- **[Confidence scoring](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Document-level and word-level confidence enables quality gating — reject or flag low-confidence results for human review
 - **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Produce hOCR output for downstream document management systems that consume positional HTML
 - **[Handwriting recognition](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/):** Extends beyond typed document OCR to handwritten forms and notes
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Structured extraction of tabular data from invoices, statements, and forms
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Report OCR progress for long multi-page batch operations in UI contexts
-- **[125+ languages](https://ironsoftware.com/csharp/ocr/languages/):** Each installable as a NuGet package, with no model path configuration
 
 ## .NET Compatibility and Future Readiness
 
-IronOCR targets .NET 6, 7, 8, and 9 across Windows x64, Windows x86, Linux x64, and macOS. It runs on Azure App Service, AWS Lambda, Docker containers, and air-gapped on-premise environments — all from the same NuGet package. The library receives regular updates from Iron Software aligned with each .NET release cycle, including planned compatibility with .NET 10 when released. PaddleOCR's .NET wrapper is a community-maintained project; compatibility with new .NET versions depends on a single maintainer's capacity. The wrapper's v3.0.1 release timeline and the 3-month lag on new PaddleOCR Python model versions reaching .NET illustrates the dependency on community availability rather than commercial release commitments.
+IronOCR targets .NET 6, 7, 8, and 9 across Windows x64, Windows x86, Linux x64, and macOS. It runs on Azure App Service, AWS Lambda, Docker containers, and air-gapped on-premise environments — all from the same NuGet package. The library receives regular updates from Iron Software aligned with each .NET release cycle, including planned compatibility with .NET 10 when released. PaddleOCR's .NET wrapper is a community-maintained project; compatibility with new .NET versions depends on a single maintainer's capacity. The wrapper's release timeline and the 3-month lag on new PaddleOCR Python model versions reaching .NET illustrates the dependency on community availability rather than commercial release commitments.
 
 ## Conclusion
 
 PaddleOCR's CJK accuracy advantage is genuine and specific. For a project whose primary workload is Chinese Simplified documents and whose team has deep learning expertise and existing GPU infrastructure, the multi-package setup cost and CUDA configuration complexity are justified by accuracy figures that Tesseract-based engines do not currently match on dense Chinese character recognition.
 
-The problem is that this specific scenario describes a minority of .NET OCR use cases. Most commercial applications process English and European-language documents where IronOCR's 97-99% accuracy exceeds PaddleOCR's 92-95%. Most development teams do not have CUDA infrastructure pre-configured. Most document pipelines receive PDFs, which PaddleOCR cannot process without an additional library. And most developers working on a .NET project expect `dotnet add package` to be the complete installation step — not the first of five packages followed by an async model download and OpenCV dependency.
+The problem is that this specific scenario describes a minority of .NET OCR use cases. Most commercial applications process English and European-language documents where IronOCR's 97-99% accuracy exceeds PaddleOCR's 92-95%. Most development teams do not have CUDA infrastructure pre-configured. Most document pipelines receive PDFs, which PaddleOCR cannot process without an additional library. And most developers working on a .NET project expect a single package install to be the complete installation step — not the first of five packages followed by an async model download and an OpenCV dependency.
 
-The total cost of ownership comparison from the README is instructive: PaddleOCR year-one cost (free license + 8 hours setup at developer rate) reaches $800-1,600 before the first document is processed in production. IronOCR at $749 perpetual plus 30 minutes of setup costs $799 total in year one, then drops to $200/year in maintenance overhead versus $1,000/year for PaddleOCR. For teams that need GPU throughput at scale, PaddleOCR CPU performance (300-500ms) already trails IronOCR CPU performance (150-300ms) — meaning the only scenario where PaddleOCR's performance argument holds is one where CUDA infrastructure is already operational.
+For teams that need GPU throughput at scale, PaddleOCR CPU performance (300-500ms) already trails IronOCR CPU performance (150-300ms) — meaning the only scenario where PaddleOCR's performance argument holds is one where CUDA infrastructure is already operational. IronOCR's perpetual license cost is typically recovered within the first week when weighed against GPU configuration time alone.
 
-The opening question is whether Chinese character accuracy at 95%+ justifies the full stack that delivers it. For Chinese-primary workloads in environments with GPU infrastructure and compliance clearance for Baidu-origin software, the answer is yes. For everything else, the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) starts working in under five minutes and covers the language, preprocessing, and PDF requirements that most .NET OCR projects actually encounter.
+The opening question is whether Chinese character accuracy at 95%+ justifies the full stack that delivers it. For Chinese-primary workloads in environments with GPU infrastructure and compliance clearance for Baidu-origin software, the answer is yes. For everything else, IronOCR starts working in under five minutes and covers the language, preprocessing, and PDF requirements that most .NET OCR projects actually encounter.

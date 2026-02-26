@@ -618,16 +618,7 @@ public class FormFieldExtractor
 
 **RapidOCR.NET:** Parallel processing code that created a new `RapidOcrEngine` per thread to avoid shared-state problems carried a significant memory cost: each engine instance loaded 300–500 MB of ONNX model weights independently.
 
-**Solution:** IronOCR `IronTesseract` instances are thread-safe and lightweight. Create one per thread in a `Parallel.ForEach` without worrying about a per-instance model load cost. The [multithreading example](https://ironsoftware.com/csharp/ocr/examples/csharp-tesseract-multithreading-for-speed/) shows the standard pattern:
-
-```csharp
-Parallel.ForEach(imageFiles, imagePath =>
-{
-    var ocr = new IronTesseract();  // lightweight — no external model load
-    var result = ocr.Read(imagePath);
-    ProcessResult(result.Text);
-});
-```
+**Solution:** IronOCR `IronTesseract` instances are thread-safe and lightweight. Create one per thread in a `Parallel.ForEach` without worrying about a per-instance model load cost. The IronOCR approach is identical to the Batch Processing Migration example above — `IronTesseract` handles this scenario with the same per-thread construction pattern, but without the 300–500 MB model load cost that each `RapidOcrEngine` instance carried. The [multithreading example](https://ironsoftware.com/csharp/ocr/examples/csharp-tesseract-multithreading-for-speed/) shows the standard pattern for high-throughput pipelines.
 
 ### Issue 3: Language Not Supported Exception
 
@@ -672,13 +663,13 @@ foreach (var page in result.Pages)
 
 ### Issue 5: CI/CD Pipeline Fails After Model Files Are Removed
 
-**RapidOCR.NET:** Build pipelines that cached or fetched the `models/` directory as a separate step — either from an artifact store, a shared S3 bucket, or a Git LFS repository — may fail when those steps find nothing to restore after the migration.
+**RapidOCR.NET:** Build pipelines that cached or fetched the `models/` directory as a separate step — either from an artifact store, a shared S3 bucket, or a Git LFS repository — will fail when those steps find nothing to restore after the migration.
 
 **Solution:** Remove the model file fetch and cache steps from the CI pipeline entirely. IronOCR's engine is restored as part of the standard `dotnet restore` step. No additional pipeline stages are required. For containerized deployments, remove any `COPY models/ ./models/` Docker instructions — the IronOCR [Docker deployment guide](https://ironsoftware.com/csharp/ocr/get-started/docker/) documents the one required system package (`libgdiplus` on Debian/Ubuntu images) and nothing more.
 
 ### Issue 6: ONNX Runtime Version Conflicts After Partial Migration
 
-**RapidOCR.NET:** Applications that also use other ONNX-based ML packages (ML.NET, ONNX object detection, etc.) may have had `Microsoft.ML.OnnxRuntime` pinned to a specific version for RapidOCR.NET compatibility. Removing RapidOCR.NET may expose version conflicts in those other packages.
+**RapidOCR.NET:** Applications that also use other ONNX-based ML packages (ML.NET, ONNX object detection, etc.) may have had `Microsoft.ML.OnnxRuntime` pinned to a specific version for RapidOCR.NET compatibility. Removing RapidOCR.NET can expose version conflicts in those other packages.
 
 **Solution:** Remove `Microsoft.ML.OnnxRuntime` from the explicit package list. IronOCR has no ONNX Runtime dependency, so removing the RapidOCR.NET reference eliminates the version pin entirely. Other ML packages that genuinely require ONNX Runtime can then resolve their own compatible version through standard NuGet dependency resolution without the RapidOCR.NET constraint.
 

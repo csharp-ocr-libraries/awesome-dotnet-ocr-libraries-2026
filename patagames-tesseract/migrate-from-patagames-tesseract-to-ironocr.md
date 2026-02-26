@@ -568,7 +568,7 @@ var result = new IronTesseract().Read("document.pdf");
 
 ## Patagames Tesseract.NET SDK Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify all Patagames references before starting:
 
@@ -591,7 +591,7 @@ grep -r "PdfiumViewer\|iTextSharp\|PdfSharp" --include="*.csproj" .
 
 Document: total count of `OcrApi.Create()` call sites, number of distinct `api.Init()` language configurations, location of tessdata directory in each deployment environment, and any preprocessing code written in `System.Drawing` or `ImageSharp` that wraps Patagames calls.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Tesseract.Net.SDK` NuGet package reference from all projects.
 2. Remove any PDF rendering NuGet packages (PdfiumViewer, iTextSharp, etc.) used solely to feed Patagames.
@@ -609,7 +609,7 @@ Document: total count of `OcrApi.Create()` call sites, number of distinct `api.I
 14. Remove the tessdata directory from all deployment manifests, Dockerfiles, and CI copy steps.
 15. Update integration tests to run on Linux CI runners (GitHub Actions ubuntu-latest, etc.) to verify cross-platform behavior.
 
-### Post-Migration Testing
+### Post-Migration
 
 - Run the full test suite on Linux (not just Windows) to confirm the cross-platform deployment unlock is working.
 - Verify that OCR accuracy is equal to or better than the Patagames baseline on the same set of test images.

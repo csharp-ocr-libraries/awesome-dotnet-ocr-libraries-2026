@@ -421,3 +421,11 @@ FodyWeavers.xsd
 _planning/
 _gold-standard/
 _sitemap-tools/
+
+# Stray audit scripts generated during content pipeline
+*audit*.js
+*audit*.py
+*audit*.ps1
+test_ps.js
+test_py.txt
+OCR_PHASE*.md

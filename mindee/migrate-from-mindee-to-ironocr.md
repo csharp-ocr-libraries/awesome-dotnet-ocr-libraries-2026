@@ -1,6 +1,6 @@
 # Migrating from Mindee to IronOCR
 
-This guide walks .NET developers through a complete migration from Mindee's cloud document parsing API to [IronOCR](https://ironsoftware.com/csharp/ocr/), a local OCR library that processes financial documents entirely on your own infrastructure. It covers package replacement, namespace updates, and four practical before-and-after code scenarios — invoice zone extraction, multi-page receipt PDF processing, financial document preprocessing, and searchable PDF archiving — each specifically chosen to differ from the scenarios in the Phase 1 comparison article.
+Migrating from Mindee to [IronOCR](https://ironsoftware.com/csharp/ocr/) moves document processing off external cloud servers and onto your own infrastructure — eliminating per-page billing, third-party data transmission, and network availability as a runtime dependency. The sections below cover package replacement, namespace updates, and four practical before-and-after code scenarios: invoice zone extraction, multi-page receipt PDF processing, financial document preprocessing, and searchable PDF archiving.
 
 ## Why Migrate from Mindee
 
@@ -801,7 +801,7 @@ var summary = result.Text.IndexOf("Invoice", StringComparison.OrdinalIgnoreCase)
 
 ## Mindee Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit all Mindee usage across the codebase:
 
@@ -820,7 +820,7 @@ Inventory findings:
 - Identify retry logic wrapping Mindee network calls
 - Identify network egress rules permitting outbound traffic to Mindee endpoints
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove the `Mindee` NuGet package from the project file
 2. Run `dotnet add package IronOcr` to install IronOCR
@@ -838,7 +838,7 @@ Inventory findings:
 14. Remove Mindee API key from all configuration files and secrets vaults
 15. Update integration tests to run synchronously without network mocking
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify extraction accuracy against a 20-30 document sample set covering each document type
 - Confirm `result.Confidence` values above 80 on representative clean scans; apply preprocessing if below

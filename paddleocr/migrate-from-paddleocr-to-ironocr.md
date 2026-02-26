@@ -6,11 +6,11 @@ This guide walks .NET developers through a complete migration from the `Sdcb.Pad
 
 The `Sdcb.PaddleOCR` wrapper is a community-maintained bridge between PaddlePaddle's Python deep learning ecosystem and .NET. It does the job, but it carries the entire weight of that bridge with it — model files, native inference binaries, OpenCV for image loading, and optional CUDA infrastructure. For most .NET OCR workloads, that is infrastructure the project never needed.
 
-**Three Model Directories Before a Single Character is Read.** PaddleOCR's inference pipeline chains three neural networks: a detection model, a direction classification model, and a recognition model. Each network is a separate directory of `.pdmodel` and `.pdiparams` files that must exist on disk before `new PaddleOcrAll(models)` compiles to a working engine. Whether those files arrive via `OnlineFullModels.ChineseV4.DownloadAsync()` — which connects to Baidu's `bj.bcebos.com` storage in China — or via a manually maintained `models/` directory tree, the developer is permanently responsible for model versioning. When `Sdcb.PaddleOCR` updates, the pre-downloaded models from the previous version may require re-download. IronOCR has no model files, no model directories, and no version synchronization problem. The engine is bundled inside the NuGet package.
+**Three Model Directories Before a Single Character is Read.** PaddleOCR's inference pipeline chains three neural networks: a detection model, a direction classification model, and a recognition model. Each network is a separate directory of `.pdmodel` and `.pdiparams` files that must exist on disk before `new PaddleOcrAll(models)` compiles to a working engine. Whether those files arrive via an async download call — which connects to Baidu's `bj.bcebos.com` storage in China — or via a manually maintained `models/` directory tree, the developer is permanently responsible for model versioning. When `Sdcb.PaddleOCR` updates, the pre-downloaded models from the previous version may require re-download. IronOCR has no model files, no model directories, and no version synchronization problem. The engine is bundled inside the NuGet package.
 
 **OpenCV Is Not Optional.** There is no path from a file path to PaddleOCR inference that bypasses OpenCvSharp. Every image, regardless of format, must pass through `Cv2.ImRead(path)` to become a `Mat` object before `ocr.Run(mat)` can accept it. That means two extra NuGet packages (`OpenCvSharp4` and `OpenCvSharp4.runtime.win`), platform-specific native DLLs in the deployment output, and an `apt-get install libopencv-dev` line in the Dockerfile. IronOCR accepts file paths, streams, byte arrays, and `System.Drawing.Bitmap` directly. The `Mat` intermediary does not exist.
 
-**GPU Configuration Is a Multi-Day Project.** PaddleOCR's advertised GPU performance figures — 50-100ms per image versus 300-500ms on CPU — are real. Getting there requires NVIDIA drivers at a specific version, CUDA Toolkit 11.8 (not 12.x), cuDNN 8.6+ placed in the correct PATH locations, and a separate `Sdcb.PaddleInference.runtime.win64.cuda118` NuGet package. In Docker, the base image must be `nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04` and the host must have `nvidia-container-toolkit` installed. Teams without existing GPU infrastructure spend 2-8 hours on CUDA configuration per environment. IronOCR is engineered for CPU inference, delivers 150-300ms per image on standard hardware, and requires no GPU setup whatsoever.
+**GPU Configuration Is a Multi-Day Project.** PaddleOCR's advertised GPU performance figures — 50-100ms per image versus 300-500ms on CPU — are real. Getting there requires NVIDIA drivers at a specific version, CUDA Toolkit 11.8 (not 12.x), cuDNN 8.6+ placed in the correct PATH locations, and a separate GPU runtime NuGet package. In Docker, the base image must be `nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04` and the host must have `nvidia-container-toolkit` installed. Teams without existing GPU infrastructure spend 2-8 hours on CUDA configuration per environment. IronOCR is engineered for CPU inference, delivers 150-300ms per image on standard hardware, and requires no GPU setup whatsoever.
 
 **Deployment Artifacts Are 4-6x Larger.** The PaddleOCR deployment output includes `paddle_inference.dll` (~200MB), `paddle2onnx.dll` (~5MB), `opencv_world*.dll` files (~50MB combined), and the model directories (~21MB). A Docker image lands at approximately 1.5GB. An IronOCR deployment is approximately 80MB total; the Docker image lands at approximately 400MB. The difference compounds in CI/CD: every pipeline run that restores NuGet packages must either download models from Baidu or pull them from a separately maintained cache layer.
 
@@ -245,7 +245,7 @@ foreach (var page in result.Pages)
 }
 ```
 
-IronOCR's `Deskew()` method handles rotation detection as part of the preprocessing pipeline. The result's `Lines` collection is delivered in reading order by the Tesseract layout engine, eliminating the manual `OrderBy` pattern. The [image orientation correction guide](https://ironsoftware.com/csharp/ocr/how-to/image-orientation-correction/) documents the full range of rotation and deskew options.
+IronOCR's `Deskew()` method handles rotation detection as part of the preprocessing pipeline. The result's `Lines` collection is delivered in reading order by the Tesseract layout engine, eliminating the manual sort pattern. The [image orientation correction guide](https://ironsoftware.com/csharp/ocr/how-to/image-orientation-correction/) documents the full range of rotation and deskew options.
 
 ### GPU and CPU Device Selection Removal
 
@@ -275,7 +275,7 @@ using PaddleOcrAll ocr = new PaddleOcrAll(models, PaddleDevice.Gpu(deviceId: 0))
     Enable180Classification = true
 };
 
-using Mat mat = Cv2.ImRead("document.png");
+using Mat mat = Cv2.ImRead("scanned-batch.png");
 PaddleOcrResult result = ocr.Run(mat);
 
 Console.WriteLine($"Text regions: {result.Regions.Length}");
@@ -284,24 +284,9 @@ Console.WriteLine(result.Text);
 
 **IronOCR Approach:**
 
-```csharp
-using IronOcr;
+*The IronOCR approach is identical to the example above — `IronTesseract` handles this scenario with the same API call. No GPU packages, no CUDA prerequisites, and no device selection are required. Replace `new PaddleOcrAll(models, PaddleDevice.Gpu(deviceId: 0))` with `new IronTesseract()` and remove all GPU-related configuration.*
 
-// No CUDA, no cuDNN, no GPU runtime package — runs on any hardware
-IronOcr.License.LicenseKey = "YOUR-LICENSE-KEY";
-
-var ocr = new IronTesseract();
-
-using var input = new OcrInput();
-input.LoadImage("document.png");
-
-var result = ocr.Read(input);
-
-Console.WriteLine($"Confidence: {result.Confidence}%");
-Console.WriteLine(result.Text);
-```
-
-The `PaddleDevice.Gpu()` call, the GPU runtime NuGet package, and the CUDA environment requirements are removed entirely. IronOCR delivers 150-300ms per image on CPU — faster than PaddleOCR on CPU (300-500ms) and sufficient for the majority of web API and document pipeline workloads without any GPU infrastructure. For high-throughput scenarios, the [speed optimization guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-fast-configuration/) covers configuration options including thread management and page segmentation mode tuning.
+IronOCR delivers 150-300ms per image on CPU — faster than PaddleOCR on CPU (300-500ms) and sufficient for the majority of web API and document pipeline workloads without any GPU infrastructure. For high-throughput scenarios, the [speed optimization guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-fast-configuration/) covers configuration options including thread management and page segmentation mode tuning.
 
 ### Structured Document Data Extraction
 
@@ -558,7 +543,7 @@ Document-level confidence is available as `result.Confidence` for quick quality 
 
 ### Issue 2: Reading Order Assumptions
 
-**PaddleOCR:** `result.Regions` is ordered by detection sequence, not reading order. Any code that consumes `result.Text` expecting top-to-bottom, left-to-right output relies on the manual `OrderBy(r.Rect.Center.Y).ThenBy(r.Rect.Center.X)` pattern used throughout PaddleOCR examples.
+**PaddleOCR:** `result.Regions` is ordered by detection sequence, not reading order. Any code that consumes `result.Text` expecting top-to-bottom, left-to-right output relies on the manual sort pattern used throughout PaddleOCR examples.
 
 **Solution:** IronOCR's `result.Text` is already in reading order. Remove the manual sort. For cases where the sort was used to build a line-by-line output, use `result.Pages[0].Lines` directly:
 
@@ -598,7 +583,7 @@ The [stream input guide](https://ironsoftware.com/csharp/ocr/how-to/input-stream
 
 ### Issue 4: Async Initialization Pattern Removal
 
-**PaddleOCR:** The engine initialization is async because `OnlineFullModels.*.DownloadAsync()` involves network I/O. This forces async throughout the call chain, which can be problematic in synchronous contexts such as constructors or non-async event handlers.
+**PaddleOCR:** The engine initialization is async because the model download involves network I/O. This forces async throughout the call chain, which can be problematic in synchronous contexts such as constructors or non-async event handlers.
 
 **Solution:** IronOCR initialization is synchronous. `new IronTesseract()` does not perform I/O. Remove the `await` and the `async` modifier from any method whose only async operation was the model download:
 
@@ -648,7 +633,7 @@ The resulting image drops from approximately 1.5GB to approximately 400MB. The [
 
 ### Issue 6: CI/CD Model Cache Invalidation
 
-**PaddleOCR:** CI/CD pipelines that cache the NuGet restore step must separately manage model file caching. A common pattern is caching the `~/.paddleocr/` directory or a `models/` folder between runs. When the wrapper version updates, the cache key changes and models must be re-downloaded from Baidu servers, adding 30-60 seconds to the pipeline.
+**PaddleOCR:** CI/CD pipelines that cache the NuGet restore step must separately manage model file caching. A common pattern is caching a `models/` folder between runs. When the wrapper version updates, the cache key changes and models must be re-downloaded from Baidu servers, adding 30-60 seconds to the pipeline.
 
 **Solution:** IronOCR has no model cache directory. The only cache required is the standard NuGet package cache. No separate cache step, no cache invalidation on wrapper updates, no download from third-party servers during CI:
 
@@ -670,7 +655,7 @@ The resulting image drops from approximately 1.5GB to approximately 400MB. The [
 
 ## PaddleOCR (.NET) Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify all PaddleOCR usage before making any changes:
 
@@ -699,7 +684,7 @@ grep -rn "PP-OCRv4\|cls_infer\|det_infer\|rec_infer" --include="*.cs" --include=
 
 Inventory the model directories and note total size. Identify which language models are in use (Chinese, English, Japanese, etc.) to determine which `IronOcr.Languages.*` packages to add. Note whether GPU configuration is present — those files have the most surface area to clean up.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Sdcb.PaddleOCR`, `Sdcb.PaddleOCR.Models.Online`, `Sdcb.PaddleInference.runtime.*`, `OpenCvSharp4`, and `OpenCvSharp4.runtime.*` from the `.csproj` file
 2. Add `IronOcr` to the `.csproj` file
@@ -714,10 +699,10 @@ Inventory the model directories and note total size. Identify which language mod
 11. Replace `result.Regions` access with `result.Pages[0].Lines` or `result.Pages[0].Words`
 12. Replace `region.Score >= threshold` with `word.Confidence >= threshold * 100`
 13. Replace `region.Rect.Center.X / .Center.Y` with `word.X / word.Y`
-14. Remove manual `OrderBy(r.Rect.Center.Y).ThenBy(r.Rect.Center.X)` sorting — IronOCR output is already in reading order
+14. Remove manual sort logic — IronOCR output is already in reading order
 15. Remove `models/` directory and all model files from the repository and deployment scripts
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify `dotnet build` succeeds with zero references to `Sdcb.*`, `OpenCvSharp`, or `PaddleInference` in the build output
 - Run OCR on the same representative document set used to validate PaddleOCR output and compare text accuracy
@@ -734,12 +719,12 @@ Inventory the model directories and note total size. Identify which language mod
 
 **Deployment Artifacts Shrink by 80 Percent.** The PaddleOCR deployment footprint — `paddle_inference.dll`, OpenCV DLLs, and three model directories — adds 300-500MB to every deployment target. After migration, the IronOCR deployment is approximately 80MB. Docker images drop from ~1.5GB to ~400MB. Container startup is faster, storage costs are lower, and deployment pipelines that previously transferred 500MB of artifacts now transfer 80MB.
 
-**Cold Start Drops from Seconds to Milliseconds.** PaddleOCR loads three neural network model files from disk on first inference, adding a 3-5 second pause before the first `ocr.Run()` call returns. In serverless functions, auto-scaling scenarios, or any context where new instances spin up on demand, that cold start is paid repeatedly. IronOCR's engine is bundled and initializes in under one second. The [basic OCR example](https://ironsoftware.com/csharp/ocr/examples/simple-csharp-ocr-tesseract/) demonstrates the initialization pattern.
+**Cold Start Drops from Seconds to Milliseconds.** PaddleOCR loads three neural network model files from disk on first inference, adding a 3-5 second pause before the first call returns. In serverless functions, auto-scaling scenarios, or any context where new instances spin up on demand, that cold start is paid repeatedly. IronOCR's engine is bundled and initializes in under one second. The [basic OCR example](https://ironsoftware.com/csharp/ocr/examples/simple-csharp-ocr-tesseract/) demonstrates the initialization pattern.
 
 **Language Coverage Expands from 14 to 125 Without Infrastructure Work.** PaddleOCR supports 14 languages. Adding any of the 111 languages IronOCR supports beyond PaddleOCR's ceiling is a single NuGet package addition per language — no model download, no directory management, no version synchronization. Teams whose document volume expands into new markets do not face a rewrite or a new infrastructure project to add Polish, Vietnamese, Greek, or Hebrew OCR support. The full [language catalog](https://ironsoftware.com/csharp/ocr/languages/) shows all 125+ available packs.
 
 **Searchable PDF Output Requires One Line.** PaddleOCR returns text regions. Converting those regions into a searchable PDF layer requires a separate PDF library, pixel-to-point coordinate conversion, and invisible text injection code that becomes permanent maintenance. After migration, `result.SaveAsSearchablePdf("output.pdf")` replaces that entire subsystem. Scanned document archive workflows, fax-to-PDF pipelines, and document management integrations all benefit directly. The [searchable PDF how-to](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/) and the [PDF data extraction blog post](https://ironsoftware.com/csharp/ocr/blog/using-ironocr/pdf-data-extraction-dotnet/) cover the full output options.
 
-**No External Network Connections at Any Stage.** PaddleOCR connects to Baidu's `bj.bcebos.com` storage for model downloads. In environments where outbound connections are restricted — government networks, air-gapped systems, financial services infrastructure — that connection requires either a firewall exception or a pre-download workflow that adds CI/CD complexity. IronOCR makes no external connections at runtime. Models restore as part of `dotnet restore` from NuGet and are present in the deployment output. Air-gapped deployment requires only that the NuGet restore succeeds during the build phase. The [AWS deployment guide](https://ironsoftware.com/csharp/ocr/get-started/aws/) and [Azure deployment guide](https://ironsoftware.com/csharp/ocr/get-started/azure/) cover cloud-specific configuration for environments with network restrictions.
+**No External Network Connections at Any Stage.** PaddleOCR connects to Baidu's `bj.bcebos.com` storage for model downloads. In environments where outbound connections are restricted — government networks, air-gapped systems, financial services infrastructure — that connection requires either a firewall exception or a pre-download workflow that adds CI/CD complexity. IronOCR makes no external connections at runtime. Models restore as part of `dotnet restore` from NuGet and are present in the deployment output. The [AWS deployment guide](https://ironsoftware.com/csharp/ocr/get-started/aws/) and [Azure deployment guide](https://ironsoftware.com/csharp/ocr/get-started/azure/) cover cloud-specific configuration for environments with network restrictions.
 
 **One Commercial Support Contact for the Entire OCR Stack.** PaddleOCR issues span the `Sdcb.PaddleOCR` wrapper (community GitHub), the PaddlePaddle framework (Baidu), OpenCvSharp (community), and CUDA/cuDNN (NVIDIA). Each layer has a different support channel with no guarantee of response time. IronOCR is a single product from Iron Software with commercial email support and priority response tiers. The [IronOCR documentation hub](https://ironsoftware.com/csharp/ocr/docs/) consolidates all API documentation, how-to guides, and troubleshooting resources in one place.

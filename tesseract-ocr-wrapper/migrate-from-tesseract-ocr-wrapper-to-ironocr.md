@@ -658,7 +658,7 @@ No temporary file, no cleanup logic, no orphaned files on exception.
 
 ## Tesseract OCR Wrapper Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase for all usage of the wrapper before writing any new code:
 
@@ -687,7 +687,7 @@ grep -rn "PdfiumViewer\|Ghostscript\|PdfSharp" --include="*.csproj" .
 
 Document the results before writing any code. Note how many call sites use the tessdata path, how many use confidence scoring, and whether any code relies on empty-string returns to detect failures.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove the `TesseractOCR` NuGet package from the project file.
 2. Install `IronOcr` via `dotnet add package IronOcr`.
@@ -705,7 +705,7 @@ Document the results before writing any code. Note how many call sites use the t
 14. Remove the tessdata directory from deployment artifacts and configuration files.
 15. Register `IronTesseract` as a singleton in the DI container for sequential workloads; use one instance per thread for parallel workloads.
 
-### Post-Migration Testing
+### Post-Migration
 
 - Confirm that OCR results on previously passing test images match or exceed the quality of the wrapper's output.
 - Verify that engine failures now throw `IronOcrException` rather than returning empty strings.

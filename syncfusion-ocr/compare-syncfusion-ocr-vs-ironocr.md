@@ -269,7 +269,7 @@ Syncfusion reserves the right to audit compliance at any time. License registrat
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("YOUR-SYNCFUSION-KEY");
 ```
 
-When any threshold is crossed — a contractor added to hit a deadline, a large contract that pushes revenue past $1M, a Series A round — the community license becomes invalid and the transition to commercial pricing is immediate. Retroactive compliance may be required. The commercial rate is $995–$1,595 per developer per year for the full Essential Studio suite; there is no OCR-only tier.
+When any threshold is crossed — a contractor added to hit a deadline, a large contract that pushes revenue past $1M, a Series A round — the community license becomes invalid and the transition to commercial pricing is immediate. Retroactive compliance is required. The commercial rate is $995–$1,595 per developer per year for the full Essential Studio suite; there is no OCR-only tier.
 
 A five-developer team using Syncfusion OCR over three years at the base commercial rate pays $14,925 in licensing for the same capability available from IronOCR Professional at a one-time $2,999. The $12,000 difference buys access to 1,599 components that have nothing to do with text extraction from documents.
 
@@ -369,9 +369,9 @@ The deeper risk is structural. Any team using the community license and growing 
 
 ### When Image OCR Is a Primary Use Case
 
-Many document processing workflows deal primarily with images: scanned invoices, photographed receipts, camera captures of forms. Syncfusion's architecture assumes PDF as the primary input format. The `OCRProcessor` does not accept images. Every image OCR workflow requires creating a `PdfDocument`, embedding the image, saving to a stream, and reloading as a `PdfLoadedDocument` before OCR can begin. On a high-volume pipeline processing thousands of invoice images per day, that PDF round-trip adds measurable overhead in both execution time and code complexity.
+Many document processing workflows deal primarily with images: scanned invoices, photographed receipts, camera captures of forms. Syncfusion's architecture assumes PDF as the primary input format. Its processor does not accept images directly. Every image OCR workflow requires a full PDF round-trip — creating a document, embedding the image, saving to a stream, and reloading — before OCR can begin. On a high-volume pipeline processing thousands of invoice images per day, that round-trip adds measurable overhead in both execution time and code complexity.
 
-Teams whose primary use case is image OCR — not PDF text layer extraction — are working against Syncfusion's architectural grain. IronOCR's `Read()` method accepts image paths and PDFs identically, making image-first workflows as straightforward as PDF-first ones.
+Teams whose primary use case is image OCR — not PDF text layer extraction — are working against Syncfusion's architectural grain. IronOCR accepts image paths and PDFs with the same single-call API, making image-first workflows as straightforward as PDF-first ones.
 
 ### When tessdata Deployment Complexity Exceeds the Value Proposition
 
@@ -385,7 +385,7 @@ Syncfusion requires annual renewal to maintain updates and support. A five-devel
 
 ### When Only OCR Is Needed
 
-Syncfusion's value proposition makes sense when a team actively uses the suite across multiple components — grids, charts, PDF editing, and OCR together in the same product. For teams whose requirement is text extraction, the 1,599 unused components represent a cost with no return. The Essential Studio NuGet graph pulls in `Syncfusion.Pdf.Net.Core`, `Syncfusion.Compression.Net.Core`, and other transitive dependencies regardless of which features are used. IronOCR's focused scope means the dependency graph contains exactly what a text extraction workflow needs and nothing else.
+Syncfusion's value proposition makes sense when a team actively uses the suite across multiple components — grids, charts, PDF editing, and OCR together in the same product. For teams whose requirement is text extraction, the 1,599 unused components represent a cost with no return. The Essential Studio NuGet graph pulls in several transitive dependencies regardless of which features are used, adding meaningful weight to the build in both package restore time and deployment artifact size. IronOCR's focused scope means the dependency graph contains exactly what a text extraction workflow needs and nothing else.
 
 ## Common Migration Considerations
 
@@ -452,15 +452,13 @@ catch (FileNotFoundException ex)
 
 ## Additional IronOCR Capabilities
 
-Beyond the features covered in the comparison above, IronOCR provides capabilities not present in Syncfusion OCR:
+Beyond the preprocessing, tessdata elimination, and licensing differences covered above, IronOCR provides document-type-specific capabilities that Syncfusion OCR does not offer:
 
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Extract text from a defined rectangular crop region using `CropRectangle`, avoiding full-page OCR when only a portion of the document is relevant (invoice header, form field, license plate).
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Setting `ocr.Configuration.ReadBarCodes = true` causes the engine to extract barcodes and QR codes alongside text in a single pass.
-- **[Searchable PDF generation](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** `result.SaveAsSearchablePdf()` produces a PDF/A-compatible searchable document from any input, with no manual stream management required.
-- **[Structured data extraction](https://ironsoftware.com/csharp/ocr/how-to/read-results/):** `result.Words`, `result.Lines`, and `result.Paragraphs` expose the full document structure with bounding box coordinates and per-word confidence scores.
-- **[Confidence scoring](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** `result.Confidence` returns an overall confidence percentage. Individual word confidence is available on each word object, enabling quality filtering in automated pipelines.
-- **[Specialized document types](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Dedicated guides and optimized settings for passports, [license plates](https://ironsoftware.com/csharp/ocr/how-to/read-license-plate/), MICR cheques, and [scanned documents](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/).
-- **[125+ languages](https://ironsoftware.com/csharp/ocr/languages/):** Available as individual NuGet packages, covering scripts that Syncfusion's 60-language Tesseract subset does not include.
+- **[Passport and ID document reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Optimized recognition settings for machine-readable travel documents, government IDs, and MRZ zones without custom configuration.
+- **[License plate recognition](https://ironsoftware.com/csharp/ocr/how-to/read-license-plate/):** Dedicated recognition mode tuned for alphanumeric plate formats across multiple character sets.
+- **[MICR cheque reading](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Reads magnetic ink character recognition lines from financial documents where standard OCR produces inconsistent results.
+- **[Multi-page TIFF processing](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/):** Processes multi-frame TIFF files as a single `OcrInput` object, with all pages returned in a structured result — no frame-splitting required.
+- **[Table extraction from documents](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Word and character coordinate data enables programmatic reconstruction of tabular structures from scanned documents, avoiding the string-parsing approach that page-level text requires.
 
 ## .NET Compatibility and Future Readiness
 
@@ -474,4 +472,4 @@ Outside that niche, the trade-offs are hard to justify. Paying $995 per develope
 
 The tessdata problem is not abstract. It surfaces in every new developer environment that has to be configured, every Docker image that has to carry the language files, every CI pipeline that has to script the downloads, and every production incident where the path is wrong or a file is missing. IronOCR eliminates that entire problem category with a standard NuGet install.
 
-For teams building new OCR capability in 2026, the straightforward recommendation is to start with [IronOCR](https://ironsoftware.com/csharp/ocr/). The API is simpler, the deployment is simpler, the licensing model does not penalize growth, and the preprocessing built into the engine handles the document quality problems that Tesseract alone — regardless of the wrapper — does not solve automatically. The [IronOCR tutorials](https://ironsoftware.com/csharp/ocr/tutorials/) cover the full feature set from basic setup through advanced document processing workflows.
+For teams building new OCR capability in 2026, the straightforward recommendation is to start with IronOCR. The API is simpler, the deployment is simpler, the licensing model does not penalize growth, and the preprocessing built into the engine handles the document quality problems that Tesseract alone — regardless of the wrapper — does not solve automatically. The IronOCR documentation and tutorials cover the full feature set from basic setup through advanced document processing workflows.

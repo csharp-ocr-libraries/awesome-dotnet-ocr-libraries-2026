@@ -1,6 +1,6 @@
 The `charlesw/tesseract` NuGet package was archived in 2021 and has received no updates since — yet it still appears in Stack Overflow answers, blog tutorials, and new project scaffolding because it accumulated over five million NuGet downloads before development stopped. Teams that adopt it today inherit a frozen dependency: Tesseract 4.1.1 model weights, no .NET 6/7/8 native binary refinements, and a maintenance timeline that ends with a GitHub archive notice. That is the practical reality before a single line of OCR code runs.
 
-The second reality hits at deployment. The `Tesseract` NuGet package works by shipping platform-specific native binaries — `tesseract50.dll` for Windows x64, a separate build for x86, `libtesseract.so` for Linux — plus the Leptonica image library alongside them. On a developer workstation these binaries resolve automatically. In a Docker container, an Azure App Service, or an ARM-based Linux server, you start writing conditional deployment logic, copying DLL files into publish output, and debugging `DllNotFoundException` at runtime. [IronOCR](https://ironsoftware.com/csharp/ocr/) ships everything in a single managed NuGet package with no external native binary management.
+The second reality hits at deployment. The `Tesseract` NuGet package works by shipping platform-specific native binaries — `tesseract50.dll` for Windows x64, a separate build for x86, `libtesseract.so` for Linux — plus the Leptonica image library alongside them. On a developer workstation these binaries resolve automatically. In a Docker container, an Azure App Service, or an ARM-based Linux server, developers start writing conditional deployment logic, copying DLL files into publish output, and debugging `DllNotFoundException` at runtime. [IronOCR](https://ironsoftware.com/csharp/ocr/) ships everything in a single managed NuGet package with no external native binary management.
 
 ## Understanding charlesw/Tesseract
 
@@ -39,9 +39,9 @@ public string ExtractText(string imagePath)
 }
 ```
 
-The `TessDataPath` string must resolve differently on every deployment target. On a developer Windows machine it points to a local folder. In a Docker Linux container that folder does not exist unless you explicitly `COPY` tessdata into the image. On Azure App Service the application root path differs from a local path. Every environment requires conditional path logic or explicit deployment scripting, and none of that logic is inside the package — it is entirely your code to write and maintain.
+The `TessDataPath` string must resolve differently on every deployment target. On a developer Windows machine it points to a local folder. In a Docker Linux container that folder does not exist unless the image build explicitly `COPY`s tessdata in. On Azure App Service the application root path differs from a local path. Every environment requires conditional path logic or explicit deployment scripting, and none of that logic is inside the package — it is entirely caller code to write and maintain.
 
-The native binaries themselves require the same attention. In publish profiles targeting self-contained .NET 8 deployments, the runtime identifier must match the binary variant the package ships. A `win-x64` publish includes the x64 native DLL; a `linux-arm64` deployment requires verifying the package ships an ARM64 binary — and for an archived package, you cannot file an issue to request it if it does not.
+The native binaries themselves require the same attention. In publish profiles targeting self-contained .NET 8 deployments, the runtime identifier must match the binary variant the package ships. A `win-x64` publish includes the x64 native DLL; a `linux-arm64` deployment requires verifying the package ships an ARM64 binary — and for an archived package, teams cannot file an issue to request it if the binary is absent.
 
 ## Understanding IronOCR
 
@@ -122,7 +122,7 @@ When a GitHub repository is archived, the maintainer has made a deliberate decis
 
 New projects that take a NuGet dependency on `Tesseract` today are starting with a package that has already received its final update. In twelve months, that dependency will be one year further from any maintenance. In three years, it will likely fail on then-current .NET runtimes. The package will continue to install and the basic API will continue to compile, but the maintenance debt accumulates invisibly.
 
-The practical consequence beyond the accuracy gap: if a critical CVE is published for Tesseract 4.1.1's C++ code, the charlesw NuGet package will not receive a patch. Your team either forks and rebuilds native binaries from source — a non-trivial undertaking — or accepts the exposure.
+The practical consequence beyond the accuracy gap: if a critical CVE is published for Tesseract 4.1.1's C++ code, the charlesw NuGet package will not receive a patch. The only paths are forking and rebuilding native binaries from source — a non-trivial undertaking — or accepting the exposure.
 
 ### IronOCR Approach
 
@@ -330,7 +330,7 @@ WORKDIR /app
 ENTRYPOINT ["dotnet", "YourApp.dll"]
 ```
 
-That Dockerfile embeds operational knowledge about charlesw/tesseract's deployment model directly into infrastructure code. When the base image changes or the Linux distribution updates Leptonica, the build breaks. With an archived package, the only remediation is maintaining your own native binary builds.
+That Dockerfile embeds operational knowledge about charlesw/tesseract's deployment model directly into infrastructure code. When the base image changes or the Linux distribution updates Leptonica, the build breaks. With an archived package, the only remediation is maintaining a custom native binary build pipeline.
 
 ### IronOCR Approach
 
@@ -508,4 +508,4 @@ The archived status is not a minor footnote. It means Tesseract 5 accuracy is no
 
 IronOCR addresses the specific friction points that charlesw/tesseract created: the tessdata deployment ceremony disappears, the native binary platform-conditional logic disappears, and Tesseract 5 accuracy arrives with automatic preprocessing on top of it. The license cost — starting at $749 perpetual — measures against the deployment hours saved, the preprocessing code that does not need to be written, and the maintenance risk eliminated from the dependency graph.
 
-For new projects in 2026, starting with an archived library is a deliberate choice to accept known future costs. For teams already running charlesw/tesseract in production, the migration path is short — the API surface is small, the code deletions outnumber the additions, and the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) provides current replacements for every pattern the archived package required.
+For new projects in 2026, starting with an archived library is a deliberate choice to accept known future costs. For teams already running charlesw/tesseract in production, the migration path is short — the API surface is small, the code deletions outnumber the additions, and the IronOCR documentation provides current replacements for every pattern the archived package required.

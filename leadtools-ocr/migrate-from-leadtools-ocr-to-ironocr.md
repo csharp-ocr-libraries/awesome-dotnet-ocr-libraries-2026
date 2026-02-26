@@ -4,7 +4,7 @@ This guide walks .NET developers through a complete migration from LEADTOOLS OCR
 
 ## Why Migrate from LEADTOOLS OCR
 
-LEADTOOLS OCR is part of a commercial imaging platform that has shipped since 1990. That heritage shows in the API. Before a single character is recognized, your application must locate two physical files on disk, validate a pairing between `LEADTOOLS.LIC` and `LEADTOOLS.LIC.KEY`, initialize a `RasterCodecs` instance, select one of three engine types, call `engine.Startup()` with a runtime directory path, and — only then — start recognition. Four namespaces, four packages, and a mandatory 500–2000 ms blocking startup call stand between installation and output. Teams migrating to IronOCR eliminate that entire layer.
+LEADTOOLS OCR ships inside an enterprise imaging platform with roots going back to 1990, and the API reflects that lineage. The minimum working configuration requires four NuGet packages, four namespaces, two physical license files deployed to a known path, a codec layer initialized before the engine, an engine type selection from three options, and a blocking startup call that loads runtime binaries into memory. All of that runs before a single character is recognized. Teams migrating to IronOCR eliminate that entire layer — one package, one namespace, one line to set a license key.
 
 **File-Based License Deployment Breaks in Containers.** LEADTOOLS requires two physical files — `LEADTOOLS.LIC` and `LEADTOOLS.LIC.KEY` — readable at a specific path on every machine that runs the application. In Docker containers, those files must either be baked into the image (exposing them in layer history) or mounted at runtime (requiring volume coordination in every orchestration environment). Azure Functions and AWS Lambda have no mechanism for license file deployment without workarounds. CI/CD pipelines need the files present at the exact path used by the startup call, or the application throws before processing a single document. IronOCR replaces both files with a string that fits in an environment variable, a Kubernetes secret, or an Azure Key Vault reference.
 
@@ -790,7 +790,7 @@ var totalAmount   = ReadRegion(imagePath, 450, 600, 200, 30);
 
 ## LEADTOOLS OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify all LEADTOOLS usage before making any changes:
 
@@ -819,7 +819,7 @@ grep -rn "GC\.Collect\|WaitForPendingFinalizers" --include="*.cs" .
 
 Note which LEADTOOLS bundle was purchased — OCR module, PDF module, and engine type (LEAD vs Tesseract vs OmniPage) — to ensure equivalent IronOCR features are tested during post-migration validation.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove all LEADTOOLS NuGet packages: `Leadtools`, `Leadtools.Ocr`, `Leadtools.Codecs`, `Leadtools.Forms.DocumentWriters`, `Leadtools.Pdf`
 2. Install `IronOcr` NuGet package
@@ -837,7 +837,7 @@ Note which LEADTOOLS bundle was purchased — OCR module, PDF module, and engine
 14. Replace preprocessing command classes (`DeskewCommand`, `DespeckleCommand`, `AutoBinarizeCommand`) with `input.Deskew()`, `input.DeNoise()`, `input.Binarize()` on the `OcrInput` instance
 15. Remove all `GC.Collect()` / `GC.WaitForPendingFinalizers()` calls added to compensate for LEADTOOLS memory management
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify recognized text output matches LEADTOOLS output on a representative sample of images and PDFs
 - Confirm confidence scores are within expected ranges using `result.Confidence`

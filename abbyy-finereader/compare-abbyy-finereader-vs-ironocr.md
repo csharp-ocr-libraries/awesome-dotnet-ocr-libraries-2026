@@ -106,7 +106,6 @@ Key characteristics:
 | Development license | $4,999 - $15,000+ (estimated) | $749 - $2,999 (perpetual) |
 | Runtime fees | Per-server or per-page | Included |
 | Annual maintenance | 20-25% of license cost | Optional |
-| 3-year TCO (example) | $50,000+ | $2,999 |
 | **Integration** | | |
 | Package management | SDK installer (not NuGet) | NuGet |
 | .NET integration | COM interop | Native .NET |
@@ -485,4 +484,4 @@ The problem is that those use cases represent a small fraction of the OCR work t
 
 The setup friction is equally disproportionate. A developer evaluating OCR for a new project should be able to install a package, write ten lines of code, and see results. ABBYY requires a sales engagement that takes weeks before a single line of OCR code runs. That is the correct model for a $50,000 enterprise contract with implementation support and SLA commitments. It is the wrong model for a development team that needs to prototype, iterate, and ship.
 
-IronOCR starts at $749 perpetual, installs in one command, and produces accurate OCR results on standard business documents without preprocessing configuration or license file management. For teams where ABBYY's specific accuracy advantages on difficult document types are not a hard requirement — which is most teams — that is the practical choice. The [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) and [tutorials](https://ironsoftware.com/csharp/ocr/tutorials/) cover the full feature set for evaluating fit against specific project requirements.
+IronOCR starts at $749 perpetual, installs in one command, and produces accurate OCR results on standard business documents without preprocessing configuration or license file management. For teams where ABBYY's specific accuracy advantages on difficult document types are not a hard requirement — which is most teams — that is the practical choice.

@@ -233,7 +233,6 @@ Key characteristics:
 | **Pricing** | | |
 | Pricing model | Monthly subscription | One-time perpetual license |
 | Entry price | $12/month ($144/year) | $749 one-time |
-| 3-year cost (PRO) | $432 | $749 (fixed) |
 | Per-document cost at scale | Yes | None |
 | SLA | None (free), varies (paid) | Enterprise SLA available |
 
@@ -662,7 +661,7 @@ OCR.space integrations accumulate technical debt in proportion to their feature 
 
 ### Structured Output Requirements
 
-OCR.space returns plain text from `ParsedResults[0].ParsedText`. There are no word coordinates, no line boundaries, no paragraph segmentation, and no per-word confidence scores. Applications that need to extract specific fields from invoices — vendor name at a known region, total amount in the bottom-right corner — have no structured foundation to build on. IronOCR's `result.Words`, `result.Lines`, and `result.Pages` provide coordinates and confidence at every granularity level. Region-based OCR via `CropRectangle` allows targeting specific document zones without post-processing the full-page text. The [read results how-to](https://ironsoftware.com/csharp/ocr/how-to/read-results/) and [region-based OCR guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/) cover these patterns in detail.
+OCR.space returns plain text and nothing else. There are no word coordinates, no line boundaries, no paragraph segmentation, and no per-word confidence scores in the response. Applications that need to extract specific fields from invoices — vendor name at a known region, total amount in the bottom-right corner — have no structured foundation to build on from OCR.space's output. IronOCR exposes a full document hierarchy with coordinates and confidence values at every granularity level: pages, paragraphs, lines, and individual words. Region-based processing allows targeting specific document zones without post-processing the entire page output. The [read results how-to](https://ironsoftware.com/csharp/ocr/how-to/read-results/) and [region-based OCR guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/) cover these patterns in detail.
 
 ### Volume Growth Beyond the Free Tier
 
@@ -754,15 +753,11 @@ OCR.space calls are inherently async because they involve HTTP round trips. Iron
 
 ## Additional IronOCR Capabilities
 
-Features not discussed in the sections above, each representing functionality with no equivalent in OCR.space:
+Features not covered in the sections above, each representing functionality with no equivalent in OCR.space:
 
-- **[Confidence scores per word](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Access `word.Confidence` for every token in the result, enabling downstream validation rules that reject low-confidence extractions.
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` and `result.Barcodes` returns decoded barcode values from the same document pass that extracted text.
-- **[125+ language packs](https://ironsoftware.com/csharp/ocr/languages/):** Install language packs as NuGet packages (`IronOcr.Languages.ChineseSimplified`, `IronOcr.Languages.Arabic`, etc.) and set `ocr.Language` or `ocr.AddSecondaryLanguage`. OCR.space supports approximately 25 languages with no multi-language-per-document feature.
 - **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** `result.SaveAsHocrFile("output.hocr")` produces standards-compliant hOCR output for downstream document processing pipelines.
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Subscribe to progress events for long-running multi-page batch operations, enabling progress bars and ETA calculations in UI applications.
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Structured table data is accessible via the result model, supporting use cases like invoice line-item extraction that require column alignment.
-- **[Docker and Linux deployment](https://ironsoftware.com/csharp/ocr/get-started/docker/):** IronOCR deploys to Docker containers and Linux servers without outbound internet access. OCR.space requires outbound internet from every deployment environment.
 - **[Specialized document reading](https://ironsoftware.com/csharp/ocr/features/specialized/):** Passport MRZ zones, license plates, MICR cheque lines, and handwriting recognition are purpose-built capabilities accessible through the same `IronTesseract` API.
 
 ## .NET Compatibility and Future Readiness
@@ -775,6 +770,6 @@ OCR.space occupies a real and useful niche: developers who need to prototype an 
 
 The problem is that .NET developers are typically not building weekend prototypes. They are building invoicing systems, medical records processors, document archival pipelines, and compliance-sensitive business applications. For those contexts, OCR.space's absent NuGet package is not an inconvenience — it is a structural incompatibility. Every hour spent building the HTTP client, rate limiter, JSON parser, and retry infrastructure is an hour not spent on the application's actual requirements. That cost is front-loaded, but the maintenance cost continues for the life of the integration.
 
-[IronOCR](https://ironsoftware.com/csharp/ocr/) addresses the specific failure mode that defines every OCR.space integration: the absence of a real SDK. One NuGet package, one method call, no HTTP plumbing, no rate limits, no documents transmitted to external servers. The $749 entry price is a one-time cost; the OCR.space PRO tier at $144/year passes that figure by year six, assuming no price increases and no volume growth. For teams projecting growth, the math closes faster. For teams with compliance requirements, the math is irrelevant — local processing is the only option regardless of cost.
+IronOCR addresses the specific failure mode that defines every OCR.space integration: the absence of a real SDK. One NuGet package, one method call, no HTTP plumbing, no rate limits, no documents transmitted to external servers. The $749 entry price is a one-time cost; the OCR.space PRO tier at $144/year passes that figure by year six, assuming no price increases and no volume growth. For teams projecting growth, the math closes faster. For teams with compliance requirements, the math is irrelevant — local processing is the only option regardless of cost.
 
-The comparison ultimately reduces to a single question: does the application require OCR as an external REST dependency, or as a library function? For production .NET applications, the answer is almost always the latter. Explore the [IronOCR tutorials](https://ironsoftware.com/csharp/ocr/tutorials/) to see the full scope of what replaces the custom HTTP client.
+The comparison ultimately reduces to a single question: does the application require OCR as an external REST dependency, or as a library function? For production .NET applications, the answer is almost always the latter.

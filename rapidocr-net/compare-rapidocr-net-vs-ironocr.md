@@ -366,7 +366,7 @@ Community projects run on contributor availability. When a RapidOCR.NET producti
 
 ### When the Project Outgrows the Prototype Assumptions
 
-RapidOCR.NET is a reasonable choice for an experimental proof-of-concept: free, no license to negotiate, quick to install beyond the model setup. When that proof-of-concept becomes a production feature, the constraints that were acceptable in a lab — no PDF support, narrow language coverage, manual model management, no commercial support — become blockers. The migration path from RapidOCR.NET to IronOCR is mechanical: remove the packages, delete the models directory, remove the MSBuild copy rules, replace the engine initialization block with a single `IronTesseract` instantiation, and unlock PDF input, 125-language coverage, automatic preprocessing, and searchable output simultaneously.
+RapidOCR.NET is a reasonable choice for an experimental proof-of-concept: free, no license to negotiate, quick to install beyond the model setup. When that proof-of-concept becomes a production feature, the constraints that were acceptable in a lab — no PDF support, narrow language coverage, manual model management, no commercial support — become blockers. The migration path from RapidOCR.NET to IronOCR is mechanical: remove the packages, delete the models directory, remove the MSBuild copy rules, replace the engine initialization block with a single zero-argument OCR engine constructor, and unlock PDF input, 125-language coverage, automatic preprocessing, and searchable output simultaneously.
 
 ## Common Migration Considerations
 
@@ -430,8 +430,7 @@ Beyond the features covered in the comparison sections, IronOCR provides capabil
 - **Barcode reading during OCR:** Set `ocr.Configuration.ReadBarCodes = true` to extract barcode values alongside text in a single pass. The [barcode OCR how-to](https://ironsoftware.com/csharp/ocr/how-to/barcodes/) and [barcode OCR example](https://ironsoftware.com/csharp/ocr/examples/csharp-ocr-barcodes/) show how `result.Barcodes` integrates with standard OCR output.
 - **Specialized document types:** IronOCR provides tested guidance for [passports](https://ironsoftware.com/csharp/ocr/how-to/read-passport/), [license plates](https://ironsoftware.com/csharp/ocr/how-to/read-license-plate/), [handwritten text](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/), and [table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/).
 - **Async OCR:** The [async OCR how-to](https://ironsoftware.com/csharp/ocr/how-to/async/) shows non-blocking processing patterns for ASP.NET request handlers and background services.
-- **Preprocessing features:** The full filter set — deskew, denoise, binarize, sharpen, dilate, erode, rotate, invert, grayscale conversion — is documented in the [preprocessing features page](https://ironsoftware.com/csharp/ocr/features/preprocessing/).
-- **OCR result features:** Structured access to pages, paragraphs, lines, words, and characters with coordinates, confidence, and font metadata is covered on the [OCR results features page](https://ironsoftware.com/csharp/ocr/features/ocr-results/).
+- **hOCR and structured export:** IronOCR can save OCR results as hOCR XML, preserving word-level bounding boxes in a standard format compatible with downstream document processing tools. The [hOCR export how-to](https://ironsoftware.com/csharp/ocr/how-to/hocr/) covers output format options.
 
 ## .NET Compatibility and Future Readiness
 
@@ -445,4 +444,4 @@ The model management overhead is the defining constraint. Four separate files, s
 
 IronOCR starts where RapidOCR.NET's limitations begin. One NuGet package, no external files, 125+ languages, native PDF input and searchable PDF output, automatic preprocessing, structured result extraction, and commercial support under a versioned API. The $749 Lite license is a one-time cost without per-transaction metering or annual renewal requirements. Teams that have priced out the engineering hours spent on model management, PDF conversion workarounds, and unsupported-language escalations consistently find the economics favor a commercial library over the free alternative.
 
-For teams currently running RapidOCR.NET in production or evaluating it for a new project, the [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) and the [how-to reading text from images guide](https://ironsoftware.com/csharp/ocr/tutorials/how-to-read-text-from-an-image-in-csharp-net/) provide a practical starting point. The migration is mechanical, the code is simpler, and the operational surface shrinks to a single package reference.
+For teams currently running RapidOCR.NET in production or evaluating it for a new project, the IronOCR tutorials hub and how-to guides provide a practical starting point. The migration is mechanical, the code is simpler, and the operational surface shrinks to a single package reference.

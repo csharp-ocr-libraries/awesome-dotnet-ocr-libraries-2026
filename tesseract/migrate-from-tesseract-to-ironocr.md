@@ -541,7 +541,7 @@ The thread-safety change also eliminates the `using` disposal pattern from insid
 
 ## Tesseract Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase for all Tesseract and tessdata references:
 
@@ -573,7 +573,7 @@ Inventory results to estimate migration scope:
 - Identify which PDF rendering library is in use (PdfiumViewer, PDFtoImage, Docnet.Core, GhostScript)
 - Note which languages are referenced in `TesseractEngine` constructor strings to determine which IronOCR language NuGet packages to add
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Tesseract` NuGet package reference from all `.csproj` files
 2. Remove PDF rendering library NuGet references added solely for Tesseract support (PdfiumViewer, PDFtoImage, Docnet.Core)
@@ -594,7 +594,7 @@ Inventory results to estimate migration scope:
 17. Delete the tessdata folder and its build `<Content Include="...">` project items
 18. Remove native binary deployment steps from build scripts and Dockerfiles (tessdata COPY, TESSDATA_PREFIX ENV, apt-get libtesseract-dev)
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify basic text extraction on the same sample images used during development with the Tesseract wrapper
 - Confirm confidence scores are reasonable (70%+ for clean documents, 85%+ for high-quality scans)

@@ -726,7 +726,7 @@ var result = new IronTesseract().Read(input);
 
 ## GdPicture.NET Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to locate every GdPicture dependency before making changes:
 
@@ -761,7 +761,7 @@ Document the following before modifying code:
 - Which language `traineddata` files are in the resource folder
 - Which deployment scripts or Docker files reference the resource folder path
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove all GdPicture NuGet packages from the project file
 2. Install `IronOcr` via NuGet
@@ -781,7 +781,7 @@ Document the following before modifying code:
 16. Remove the resource folder path from deployment scripts and Docker images
 17. Update `using GdPicture14;` to `using IronOcr;` across all affected files
 
-### Post-Migration Testing
+### Post-Migration
 
 After completing all code changes, verify the following before deploying to production:
 
@@ -810,4 +810,4 @@ After completing all code changes, verify the following before deploying to prod
 
 **Version-Stable Namespace.** `using IronOcr` has not changed across major version releases. NuGet version numbers handle versioning through the standard package management model. Future major upgrades do not require a codebase-wide find-and-replace of the namespace import.
 
-**Predictable Perpetual Licensing.** IronOCR is priced at $749 (Lite), $1,499 (Professional), and $2,999 (Enterprise) — one-time perpetual purchases that include one year of updates, with optional renewal at 20% annually. All features are available at every tier. There are no per-feature plugins, no per-page costs, and no maintenance obligation after the first year. Teams that previously absorbed $8,000+ in GdPicture plugin licenses for an OCR-only workflow recover that gap within the first license cycle. Full pricing details are available on the [IronOCR licensing page](https://ironsoftware.com/csharp/ocr/licensing/).
+**Predictable Perpetual Licensing.** IronOCR is priced at $749 (Lite), $1,499 (Plus), $2,999 (Professional), and $5,999 (Unlimited) — one-time perpetual purchases that include one year of updates, with optional renewal annually. All features are available at every tier. There are no per-feature plugins, no per-page costs, and no maintenance obligation after the first year. Teams that previously absorbed $8,000+ in GdPicture plugin licenses for an OCR-only workflow recover that gap within the first license cycle. Full pricing details are available on the [IronOCR licensing page](https://ironsoftware.com/csharp/ocr/licensing/).

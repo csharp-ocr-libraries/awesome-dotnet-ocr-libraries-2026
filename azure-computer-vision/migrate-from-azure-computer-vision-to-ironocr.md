@@ -836,7 +836,7 @@ The [image orientation correction guide](https://ironsoftware.com/csharp/ocr/how
 
 ## Azure Computer Vision OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Locate all Azure Computer Vision and Form Recognizer usage in the codebase:
 
@@ -871,7 +871,7 @@ Inventory items before coding begins:
 - Identify multi-frame TIFF inputs currently split for per-frame upload
 - Check Docker and CI/CD configurations for outbound Azure network rules that will no longer be needed
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Azure.AI.Vision.ImageAnalysis` NuGet package from all projects that use it
 2. Remove `Azure.AI.FormRecognizer` NuGet package from all projects that use it
@@ -889,7 +889,7 @@ Inventory items before coding begins:
 14. Convert Form Recognizer prebuilt model field extraction to `CropRectangle`-based region OCR for known document templates
 15. Remove `RequestFailedException` catch blocks for HTTP 429 and 5xx; simplify error handling to file system and input validation exceptions only
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify plain text extraction output matches or improves on Azure results for a representative sample of 20+ documents
 - Confirm multi-page PDF processing produces text for all pages without per-page billing counters in monitoring

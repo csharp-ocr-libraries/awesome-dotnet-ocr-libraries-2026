@@ -134,7 +134,7 @@ Key characteristics of IronOCR:
 | **Commercial Readiness** | | |
 | Commercial license | Apache 2.0 | Perpetual per developer |
 | Support channel | GitHub issues | Email support |
-| English documentation | Sparse | Comprehensive |
+| English documentation | Sparse | Extensive docs, tutorials, and how-to guides |
 | Production case studies | Rare (.NET specific) | Documented |
 
 ## Abstraction Depth and Maintenance Risk
@@ -232,7 +232,7 @@ var result = ocr.Read("mixed-document.jpg");
 
 The [multiple language guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-multiple-languages/) covers simultaneous multi-language recognition for documents that mix scripts — a capability that requires no model-level decision at all, just an `AddSecondaryLanguage` call.
 
-For teams whose documents span multiple languages or whose language requirements may expand, a 125-language catalog backed by maintained NuGet packages is a more durable choice than a 10–20 language set with variable maintenance commitment.
+For teams whose documents span multiple languages, or whose language requirements are expected to grow beyond the initial scope, a 125-language catalog backed by maintained NuGet packages is a more durable choice than a 10–20 language set with variable maintenance commitment.
 
 ## Preprocessing and PDF Support
 
@@ -328,7 +328,7 @@ The [image quality correction guide](https://ironsoftware.com/csharp/ocr/how-to/
 
 ### The Pipeline Processes Non-CJK Documents
 
-PaddleSharp was built for Chinese. That heritage is visible in the model naming (`ChineseV3`), the primary documentation language, and the language pack availability. A team that starts with Chinese document processing and then expands to French invoices or German contracts hits a hard wall: the available model packs outside CJK are few, the maintenance commitment for non-CJK models is uncertain, and the English-language documentation for setting them up is sparse. IronOCR's 125+ language catalog via NuGet means language expansion is a package install, not a research project.
+PaddleSharp was built for Chinese. That heritage is visible in the model naming convention (ChineseV3), the primary documentation language, and the language pack availability. A team that starts with Chinese document processing and then expands to French invoices or German contracts hits a hard wall: the available model packs outside CJK are few, the maintenance commitment for non-CJK models is uncertain, and the English-language documentation for setting them up is sparse. IronOCR's 125+ language catalog via NuGet means language expansion is a package install, not a research project.
 
 ### The Deployment Environment Has No GPU
 
@@ -401,13 +401,11 @@ For CJK teams migrating from PaddleSharp, Chinese Simplified, Chinese Traditiona
 
 Beyond the features compared above, IronOCR provides capabilities that fall entirely outside PaddleSharp's scope:
 
-- **[Searchable PDF output](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** Convert scanned documents into text-searchable PDFs in a single method call — the most requested document digitization output format
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Enable `ocr.Configuration.ReadBarCodes = true` to extract barcodes and QR codes from the same document pass that extracts text, with no second processing step
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Use `CropRectangle` to target specific zones of an image — header rows, invoice totals, specific form fields — without processing the full page
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Output standard hOCR HTML with embedded word positions for downstream document understanding workflows
+- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Target specific zones of an image — header rows, invoice totals, specific form fields — using `CropRectangle` without processing the full page
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Built-in async support for integrating OCR into ASP.NET Core request pipelines without blocking threads
-- **[Preprocessing feature set](https://ironsoftware.com/csharp/ocr/features/preprocessing/):** Deskew, denoise, contrast, binarize, sharpen, dilate, erode, invert, grayscale, and resolution scaling — all without an external image library
-- **[Document features](https://ironsoftware.com/csharp/ocr/features/document/):** Native multi-page TIFF, GIF, and PDF input with page-range selection
+- **[Passport and ID reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Structured extraction of machine-readable zone data from travel documents and identity cards
+- **[Table reading](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Spatial grouping of word coordinates to reconstruct row-column structure from tabular document layouts
+- **[Licensing](https://ironsoftware.com/csharp/ocr/licensing/):** Perpetual per-developer licenses with no runtime royalties and free development use under the trial mode
 
 ## .NET Compatibility and Future Readiness
 
@@ -421,4 +419,4 @@ Outside that scenario, the abstraction depth becomes a liability. Three upstream
 
 IronOCR's trade-off is the inverse: a single commercial package with a $749 entry price, no model management, native PDF and multi-format input, 125+ languages as NuGet packages, and built-in preprocessing that eliminates the need for OpenCV. The abstraction is by design, and the abstraction is stable — the API has not required teams to track upstream Baidu model format changes to keep their applications running.
 
-For teams with general-purpose English or multi-language OCR needs, PDF workflows, or deployment constraints that preclude GPU hardware, IronOCR is the straightforward choice. The [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) covers the full range of input types, preprocessing options, and output formats, and the [tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) provides working code for common document types from invoices to passports to scanned archives.
+For teams with general-purpose English or multi-language OCR needs, PDF workflows, or deployment constraints that preclude GPU hardware, IronOCR is the straightforward choice. The IronOCR documentation covers the full range of input types, preprocessing options, and output formats, and the tutorials hub provides working code for common document types from invoices to passports to scanned archives.

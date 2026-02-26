@@ -104,7 +104,6 @@ Key characteristics:
 | | HIPAA / ITAR | BAA + complex review | No third-party handling |
 | | GDPR Article 28 | DPA required | Not applicable (local) |
 | **Cost** | Pricing model | $1.50/1,000 images | Perpetual ($749–$5,999) |
-| | 3-year TCO at 50K img/month | ~$2,700 + overhead | $2,999 one-time |
 
 ## Authentication Complexity and Credential Management
 
@@ -379,7 +378,7 @@ The most common migration trigger is not cost — it is a compliance audit. Gove
 
 ### PDF Workflows Become Unmanageable at Scale
 
-Teams that start with Google Cloud Vision for image OCR often discover the PDF complexity when they need to expand scope. Handling 200 PDFs per day with the GCS async pipeline is workable but painful. Handling 10,000 PDFs per day requires hardening the entire pipeline: retry logic for GCS upload failures, dead-letter queues for operations that never complete, cleanup jobs for orphaned GCS objects when the application crashes mid-pipeline, and monitoring of both Vision API costs and GCS storage costs. Teams that reach this scale consistently find the IronOCR migration to be straightforward — the entire async GCS pipeline collapses to `input.LoadPdf(path)` followed by `_ocr.Read(input)`, and the failure modes shrink from network timeouts, auth failures, GCS quota errors, and JSON parse exceptions to local file I/O exceptions only.
+Teams that start with Google Cloud Vision for image OCR often discover the PDF complexity when they need to expand scope. Handling 200 PDFs per day with the GCS async pipeline is workable but painful. Handling 10,000 PDFs per day requires hardening the entire pipeline: retry logic for GCS upload failures, dead-letter queues for operations that never complete, cleanup jobs for orphaned GCS objects when the application crashes mid-pipeline, and monitoring of both Vision API costs and GCS storage costs. Teams that reach this scale consistently find the IronOCR migration to be straightforward — the entire async GCS pipeline collapses to a direct local file load followed by a single read call, and the failure modes shrink from network timeouts, auth failures, GCS quota errors, and JSON parse exceptions to local file I/O exceptions only.
 
 ### Budget Predictability Matters More Than Per-Image Flexibility
 
@@ -387,7 +386,7 @@ Early-stage projects often choose Google Cloud Vision because the free tier abso
 
 ### Batch Processing Hits Rate Limits
 
-Document-heavy workflows — legal discovery, financial document digitization, insurance claim processing — routinely require processing thousands of documents per hour. Google Cloud Vision's 1,800-requests-per-minute default quota means a burst of 3,000 documents triggers rate limiting and requires either a quota increase request through GCP Console (which involves waiting for Google's approval) or implementing exponential backoff with jitter. The migration examples in `google-cloud-vision-migration-examples.cs` show the rate-limit handling code explicitly: a 60-second wait on `HttpStatusCode.TooManyRequests` followed by a retry — which means a single quota exceedance stalls the entire processing pipeline for a minute. IronOCR's local processing is bounded only by available CPU cores, and parallel processing with `Parallel.ForEach` uses all of them with no external approval required.
+Document-heavy workflows — legal discovery, financial document digitization, insurance claim processing — routinely require processing thousands of documents per hour. Google Cloud Vision's 1,800-requests-per-minute default quota means a burst of 3,000 documents triggers rate limiting and requires either a quota increase request through GCP Console (which involves waiting for Google's approval) or implementing exponential backoff with jitter. A single quota exceedance stalls the entire processing pipeline for a mandatory 60-second wait before any retry. IronOCR's local processing is bounded only by available CPU cores, and parallel processing uses all of them with no external approval required.
 
 ### Air-Gapped Deployments Are Required
 
@@ -431,13 +430,11 @@ Google Cloud Vision's ML-backed models handle some image quality issues — low 
 
 Beyond the features covered in the comparisons above, [IronOCR](https://ironsoftware.com/csharp/ocr/) provides capabilities that have no equivalent in Google Cloud Vision's OCR surface:
 
-- **[Searchable PDF output](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** Convert scanned documents to text-searchable PDFs with `result.SaveAsSearchablePdf()`. Google Cloud Vision has no equivalent output format — it returns text only.
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Enable `ocr.Configuration.ReadBarCodes = true` to extract barcode values alongside text in a single pass. Useful for invoice processing and warehouse documents.
-- **[125+ language packs](https://ironsoftware.com/csharp/ocr/languages/):** Install language-specific NuGet packages (e.g., `IronOcr.Languages.ChineseSimplified`) and set `ocr.Language = OcrLanguage.ChineseSimplified`. Multiple languages process simultaneously with `AddSecondaryLanguage`.
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Apply `CropRectangle` to process only a defined area of an image, reducing processing time and limiting output to the relevant field.
 - **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Save results as hOCR files with `result.SaveAsHocrFile()` for downstream tools that consume the hOCR format.
-- **[Confidence scores and progress tracking](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Overall and per-word confidence values are available on every result. Long-running batch jobs can report progress via the [progress tracking API](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/).
+- **[Progress tracking for batch jobs](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Long-running batch workloads can report per-document completion via the progress tracking API without polling a queue or parsing log output.
 - **[Specialized document types](https://ironsoftware.com/csharp/ocr/features/specialized/):** IronOCR includes pre-tuned configurations for passports, license plates, MICR cheques, and handwritten documents — document types that require specific engine tuning beyond general OCR.
+- **[Table extraction from documents](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Structured table data in scanned documents can be extracted into row-column output without post-processing the raw text stream.
+- **[Image color correction](https://ironsoftware.com/csharp/ocr/how-to/image-color-correction/):** Contrast normalization, binarization threshold adjustment, and grayscale conversion are available as explicit preprocessing steps for scans with uneven lighting or faded ink.
 
 ## .NET Compatibility and Future Readiness
 
@@ -451,4 +448,4 @@ IronOCR's on-premise model inverts almost every one of those constraints. Docume
 
 The decision reduces to a single question about architecture. If your documents can travel to Google's infrastructure without compliance, regulatory, or contractual issues, and your volume is low enough that the per-image cost is acceptable, Google Cloud Vision's ML accuracy and managed infrastructure are legitimate advantages. If documents must stay on-premise — for HIPAA, ITAR, CMMC, government contractor requirements, air-gapped deployment, or data sovereignty policies — that question is already answered before evaluating any other feature. IronOCR's perpetual licensing also converts OCR from a variable cost that scales with document volume into a fixed line item, which simplifies budget planning considerably at production scale.
 
-For teams evaluating the migration, the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) and [tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) provide complete coverage of the full API, including the preprocessing, structured data, and specialized document features that are outside Google Cloud Vision's OCR scope entirely.
+For teams evaluating the migration, the IronOCR documentation and tutorials hub provide complete coverage of the full API, including the preprocessing, structured data, and specialized document features that are outside Google Cloud Vision's OCR scope entirely.

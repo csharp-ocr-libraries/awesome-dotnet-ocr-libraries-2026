@@ -296,7 +296,7 @@ var lowConfidenceWords = result.Pages
 Console.WriteLine($"Words below 70% confidence: {lowConfidenceWords.Count}");
 ```
 
-The `SaveAsSearchablePdf()` call embeds the recognized text as a hidden layer beneath the original image, making the document fully text-searchable without altering its visual appearance. The [searchable PDF how-to](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/) covers page range options and DPI settings. For structured data extraction patterns, the [read results guide](https://ironsoftware.com/csharp/ocr/how-to/read-results/) documents the full `OcrResult` hierarchy including word coordinates and confidence access. See also the [searchable PDF example](https://ironsoftware.com/csharp/ocr/examples/make-pdf-searchable/) for a complete working implementation.
+The `SaveAsSearchablePdf()` call embeds the recognized text as a hidden layer beneath the original image, making the document fully text-searchable without altering its visual appearance. The [searchable PDF how-to](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/) covers page range options and DPI settings. For structured data extraction patterns, the [read results guide](https://ironsoftware.com/csharp/ocr/how-to/read-results/) documents the full `OcrResult` hierarchy including word coordinates and confidence access. The [searchable PDF example](https://ironsoftware.com/csharp/ocr/examples/make-pdf-searchable/) provides a complete working implementation.
 
 ### Batch Document Processing
 
@@ -517,7 +517,7 @@ Parallel.ForEach(documentPaths, path =>
 
 ### Issue 5: CI/CD Pipeline Breaks After Partial Restore
 
-**XImage.OCR:** A CI/CD agent with a warmed package cache may have some XImage.OCR language packs cached at an old version. When only the core package was updated in the project file, restore succeeds but the runtime loads mismatched assemblies. The build passes; the deployment fails.
+**XImage.OCR:** A CI/CD agent with a warmed package cache often has some XImage.OCR language packs cached at an old version. When only the core package was updated in the project file, restore succeeds but the runtime loads mismatched assemblies. The build passes; the deployment fails.
 
 **Solution:** After migration to IronOCR, the CI/CD pipeline restores one package. Add a validation step to confirm the expected version is present:
 
@@ -556,7 +556,7 @@ For the full structured data API, see the [read results how-to](https://ironsoft
 
 ## XImage.OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to find all XImage.OCR touchpoints before making changes:
 
@@ -580,7 +580,7 @@ grep "XImage.OCR.Language" --include="*.csproj" -r . | wc -l
 
 Note which image source types are in use (file paths, byte arrays, streams, TIFF), and identify any locations that use temp files for byte array processing. These are high-priority cleanup targets.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove all `RasterEdge.XImage.OCR` and `XImage.OCR.Language.*` package references from every `.csproj` file
 2. Add `IronOcr` package reference (`dotnet add package IronOcr`)
@@ -597,7 +597,7 @@ Note which image source types are in use (file paths, byte arrays, streams, TIFF
 13. Replace `ocrHandler.SetVariable("tessedit_char_whitelist", ...)` with `ocr.Configuration.WhiteListCharacters = ...`
 14. Update CI/CD pipeline: remove multi-package restore steps, remove version synchronization logic, verify single `IronOcr` package restore
 
-### Post-Migration Testing
+### Post-Migration
 
 - Confirm basic text extraction produces correct output from a known-good test image
 - Verify multi-language documents return text for all configured languages

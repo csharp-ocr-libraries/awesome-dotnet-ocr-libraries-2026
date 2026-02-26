@@ -46,7 +46,7 @@ public class KlippaService
 }
 ```
 
-There is no `IronTesseract`-style class to instantiate. There is no `OcrInput` to configure. Every aspect of authentication, retry logic, error handling, and response parsing is your problem to implement and maintain.
+There is no typed class to instantiate. There is no input object to configure. Every aspect of authentication, retry logic, error handling, and response parsing is your problem to implement and maintain.
 
 ## Understanding IronOCR
 
@@ -369,14 +369,10 @@ Klippa's identity document parsing returns pre-structured passport and ID fields
 
 Beyond the comparison points above, IronOCR provides capabilities that extend well past what Klippa's specialist scope addresses:
 
-- **[Searchable PDF output](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** Convert scanned documents into text-searchable PDFs, enabling downstream full-text indexing and search.
 - **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Extract barcode and QR code values in the same pass as text extraction, useful for invoice processing with embedded codes.
-- **[125+ language support](https://ironsoftware.com/csharp/ocr/languages/):** Install language packs as NuGet packages. Process Arabic, Chinese, Japanese, Russian, Hebrew, and 120+ other languages with no tessdata management.
 - **[MICR / cheque reading](https://ironsoftware.com/csharp/ocr/how-to/read-micr-cheque/):** Extract MICR font characters from cheques and banking documents — a financial document use case that Klippa's specialist model does not cover.
 - **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Extract tabular data from structured documents — financial statements, purchase orders, inventory lists — with coordinate-aware result objects.
 - **[Handwriting recognition](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/):** Process handwritten forms, annotations, and signatures alongside printed text.
-- **[Confidence scores per word](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** Every word in `OcrResult.Words` carries a confidence percentage, enabling quality filtering and low-confidence flagging before downstream processing.
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** Export results in hOCR format for integration with document archival systems and search indexes that consume the standard.
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Monitor OCR progress for multi-page documents, useful for long-running batch jobs with user-facing status indicators.
 
 ## .NET Compatibility and Future Readiness
@@ -391,4 +387,4 @@ The limitations are structural, not incidental. There is no on-premise option to
 
 IronOCR addresses each of these structural points directly. Local processing eliminates the data residency problem. The general-purpose engine handles any document type without category restrictions. The NuGet package replaces the custom HTTP client with a three-line install. Perpetual licensing at $749 eliminates per-document cost accumulation regardless of volume. The trade-off is that structured field extraction — the vendor name, the invoice total, the VAT amount — requires extraction code you write, rather than fields Klippa returns directly.
 
-The practical question is whether your application needs a pre-built expense parsing service or an OCR engine that processes any document locally. For teams with strict data handling requirements, document types beyond receipts and invoices, or meaningful document volume, IronOCR is the more durable foundation. The [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/) provides extraction patterns for invoices, receipts, identity documents, and financial forms — covering the Klippa use cases without the cloud dependency.
+The practical question is whether your application needs a pre-built expense parsing service or an OCR engine that processes any document locally. For teams with strict data handling requirements, document types beyond receipts and invoices, or meaningful document volume, IronOCR is the more durable foundation.

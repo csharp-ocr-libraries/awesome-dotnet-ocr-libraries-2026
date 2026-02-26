@@ -685,7 +685,7 @@ public void ExtractsRoutingNumberFromInvoiceText()
 
 ## Veryfi Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to inventory all Veryfi usage before touching any code:
 
@@ -709,7 +709,7 @@ grep -rn "VeryfiWebhook\|X-Veryfi-Token\|webhook" --include="*.cs" .
 
 Record the total count of `ProcessDocumentAsync` call sites, the list of response fields accessed per call site, and the list of environments containing Veryfi credentials.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove the `Veryfi` NuGet package from all projects in the solution.
 2. Install `IronOcr` NuGet package to all projects that previously referenced `Veryfi`.
@@ -727,7 +727,7 @@ Record the total count of `ProcessDocumentAsync` call sites, the list of respons
 14. Replace single-threaded sequential loops with `Parallel.ForEach` using one `IronTesseract` per thread.
 15. Add `IRONOCR_LICENSE_KEY` to all environment variable configurations and CI/CD secret stores.
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify that no Veryfi network calls appear in HTTP traffic logs after migration deployment.
 - Confirm that extracted vendor names match expected values across a sample set of 20–50 receipts.

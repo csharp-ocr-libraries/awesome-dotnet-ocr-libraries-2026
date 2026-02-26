@@ -66,7 +66,7 @@ The table below maps features directly for teams building the business case for 
 | HIPAA compliance path | Business Associate Agreement required | No third-party data handling |
 | .NET Framework support | .NET Standard 2.0+ | .NET Framework 4.6.2+ and .NET 5/6/7/8/9 |
 | NuGet packages required | `Google.Cloud.Vision.V1` + `Google.Cloud.Storage.V1` | `IronOcr` only |
-| Pricing model | Per-request metered billing | Perpetual ($749 Lite / $1,499 Pro / $2,999 Enterprise) |
+| Pricing model | Per-request metered billing | Perpetual ($749 Lite / $1,499 Plus / $2,999 Professional / $5,999 Unlimited) |
 
 ## Quick Start: Google Cloud Vision OCR to IronOCR Migration
 
@@ -751,7 +751,7 @@ int height = word.Height;
 
 ## Google Cloud Vision OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase to identify every Google Cloud Vision dependency before making any changes:
 
@@ -788,7 +788,7 @@ Inventory notes to complete before starting:
 - Identify all environments where `GOOGLE_APPLICATION_CREDENTIALS` is configured
 - Note any code that reads GCP project IDs or bucket names from configuration — remove after migration
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Google.Cloud.Vision.V1` NuGet package from all projects
 2. Remove `Google.Cloud.Storage.V1` NuGet package from all projects
@@ -806,7 +806,7 @@ Inventory notes to complete before starting:
 14. Convert sequential batch loops to `Parallel.ForEach` with per-thread `IronTesseract` instances
 15. Remove `GOOGLE_APPLICATION_CREDENTIALS` from all environment configurations, CI/CD pipelines, Docker Compose files, and Kubernetes secrets
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify that no `RpcException` or `GoogleApiException` types remain referenced in error handling code
 - Confirm `GOOGLE_APPLICATION_CREDENTIALS` is absent from all deployment environment configurations

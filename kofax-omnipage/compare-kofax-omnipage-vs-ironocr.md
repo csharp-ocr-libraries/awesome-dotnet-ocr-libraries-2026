@@ -317,7 +317,7 @@ An enterprise team running OmniPage for contract processing hits a natural ceili
 
 ### The Procurement Timeline Blocks Product Delivery
 
-A startup or mid-size company building a document digitization feature discovers that the OCR vendor requiring 4–12 weeks of sales engagement will miss their product launch date. The product manager does not have 8 weeks for procurement. `dotnet add package IronOcr` resolves in 30 seconds; a license key from [the IronOCR product page](https://ironsoftware.com/csharp/ocr/) is self-service. The feature ships. This scenario is not hypothetical — it is the most common reason development teams document when they explain their technology choices to engineering leadership after the fact.
+A startup or mid-size company building a document digitization feature discovers that the OCR vendor requiring 4–12 weeks of sales engagement will miss their product launch date. The product manager does not have 8 weeks for procurement. IronOCR installs from NuGet in 30 seconds; a license key from [the IronOCR product page](https://ironsoftware.com/csharp/ocr/) is self-service. The feature ships. This scenario is not hypothetical — it is the most common reason development teams document when they explain their technology choices to engineering leadership after the fact.
 
 ### The Deployment Topology Changes
 
@@ -470,9 +470,6 @@ The [image quality correction guide](https://ironsoftware.com/csharp/ocr/how-to/
 Beyond the features addressed in the comparison sections above, IronOCR provides:
 
 - **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** Define `CropRectangle` zones to extract text from specific areas of a document — invoice number fields, header regions, signature blocks — without processing the entire page
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` to extract QR codes and 1D barcodes in the same pass as text extraction; no separate barcode SDK required
-- **[Confidence scores per word](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** `result.Words` exposes per-word confidence alongside position coordinates, enabling downstream validation workflows that flag low-confidence extractions for human review
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** `result.SaveAsHocrFile()` produces an HTML document with embedded word-level position data, compatible with document layout analysis tools
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Native async support for non-blocking OCR in ASP.NET request handlers and background services
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Multi-page document processing exposes progress callbacks for UI feedback in long-running batch operations
 - **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Dedicated guidance for the scan quality profiles most common in enterprise document capture workflows
@@ -490,4 +487,4 @@ The procurement model and deployment architecture that made sense for enterprise
 
 For the overwhelming majority of .NET OCR workloads — invoices, contracts, scanned PDFs, identity documents, receipts — the accuracy difference between OmniPage and IronOCR on clean to moderately degraded documents is under 1%. That 1% does not justify a 4–12 week procurement timeline, a $10K+ entry price, annual maintenance fees, per-page runtime costs, license server operational overhead, and a deployment model that conflicts with containerized infrastructure. IronOCR at $749 perpetual delivers 95%+ accuracy on standard business document content, installs in 30 seconds, deploys to Docker and Linux without installer steps, and licenses via a string key with no network dependency at runtime.
 
-The comparison that matters is not OmniPage's ICR accuracy on degraded historical documents versus IronOCR's — it is whether any project that actually needs that precision tier also has the enterprise procurement infrastructure, the license server operational capacity, and the deployment tolerance for installer-based SDK distribution. If all three answers are yes, OmniPage is a legitimate choice. If any answer is no, the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) covers everything needed to be in production the same day.
+The comparison that matters is not OmniPage's ICR accuracy on degraded historical documents versus IronOCR's — it is whether any project that actually needs that precision tier also has the enterprise procurement infrastructure, the license server operational capacity, and the deployment tolerance for installer-based SDK distribution. If all three answers are yes, OmniPage is a legitimate choice. If any answer is no, IronOCR documentation covers everything needed to be in production the same day.

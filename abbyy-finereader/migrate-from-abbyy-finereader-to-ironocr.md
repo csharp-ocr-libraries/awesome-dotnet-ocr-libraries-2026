@@ -10,7 +10,7 @@ ABBYY FineReader Engine is a capable OCR platform, but its architecture was desi
 
 **SDK Installer Blocks Modern Deployment Patterns.** ABBYY deploys via a Windows SDK installer that places binaries, language data, runtime files, and license files at hard-coded paths. Containerizing a service that uses ABBYY requires either baking a 300+ MB custom base image from that installer output or mounting volumes with license files at startup. Neither approach fits a standard Kubernetes or cloud-native pipeline. IronOCR is a NuGet package: the same `dotnet restore` that pulls every other dependency pulls the complete OCR engine.
 
-**Per-Page Licensing Turns Volume Into a Cost Center.** ABBYY's volume-based licensing models charge per page processed above included thresholds. An application that processes 50,000 documents per month at launch and reaches 500,000 two years later has its OCR costs growing in direct proportion to its success. IronOCR's perpetual license has no per-page component. Processing ten million pages costs the same as processing ten thousand.
+**Per-Page Licensing Turns Volume Into a Cost Center.** ABBYY's volume-based licensing models charge per page processed above included thresholds. An application that processes 50,000 documents per month at launch and reaches 500,000 two years later has its OCR costs growing in direct proportion to its success. IronOCR charges a flat fee for the license — a team processing two million pages a month pays exactly the same license cost as one processing two thousand.
 
 **Language Data Requires Manual Deployment Coordination.** ABBYY language packs live as files in the SDK runtime directory. Adding a language means identifying the correct data files, copying them to the right path on every deployment target, and updating CI/CD scripts to include them. On IronOCR, adding French is `dotnet add package IronOcr.Languages.French` — the package manager handles the rest.
 
@@ -61,7 +61,6 @@ The following table covers the capabilities relevant to teams evaluating this mi
 | **Cross-Platform** | Windows, Linux, macOS | Windows, Linux, macOS, Docker, Azure, AWS |
 | **Docker Deployment** | Custom base image required | Standard .NET base image + `libgdiplus` |
 | **Confidence Scoring** | Yes | Yes (`result.Confidence`) |
-| **3-Year TCO (mid-size team)** | $50,000+ (estimated) | $2,999 (Professional) |
 | **Time to First OCR Result** | 4-12 weeks (procurement) | Same day |
 
 ## Quick Start: ABBYY FineReader to IronOCR Migration

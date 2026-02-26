@@ -83,7 +83,6 @@ The table below covers the full capability gap between the two libraries.
 | Language support | Limited (Latin MRZ) | 125+ languages, bundled as NuGet packages |
 | Multi-language simultaneous | Not supported | Yes (`OcrLanguage.French + OcrLanguage.German`) |
 | Confidence scores | Per-line only | Per word, line, page |
-| Searchable PDF output | Not supported | Yes |
 | hOCR export | Not supported | Yes |
 | Licensing model | Annual subscription ($599+/device/year) | Perpetual ($749 one-time, Lite tier) |
 | Multiple products required | Yes (3+ for full coverage) | No (one package) |
@@ -643,7 +642,7 @@ The [custom font training guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-
 
 ## Dynamsoft OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit the codebase for all Dynamsoft references:
 
@@ -677,7 +676,7 @@ Inventory findings:
 - Identify any `ReferenceRegionArray` definitions (convert to `CropRectangle`)
 - Note which features are covered by separate products (barcodes, document normalization)
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Dynamsoft.LabelRecognizer` NuGet package (and any other Dynamsoft packages)
 2. Install `IronOcr` NuGet package (`dotnet add package IronOcr`)
@@ -695,7 +694,7 @@ Inventory findings:
 14. Replace frame iteration loops over TIFF files with `input.LoadImageFrames(path)`
 15. Add `result.SaveAsSearchablePdf(outputPath)` wherever scanned outputs need to be archived
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify `IronOcr.License.IsValidLicense` returns `true` at application startup
 - Confirm all recognition results return non-empty `result.Text` for previously working inputs

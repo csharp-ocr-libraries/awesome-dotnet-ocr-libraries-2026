@@ -554,7 +554,7 @@ Once model references are removed and IronOCR is initialized, delete the model d
 
 ### Issue 3: Singleton Lifetime Assumption Breaks After Migration
 
-**PaddleSharp OCR:** `PaddleOcrAll` was registered as a singleton because its construction cost made per-request instantiation impractical. Migration code that lifts IronOCR into the same singleton registration may introduce unnecessary state sharing across requests. While `IronTesseract` is thread-safe when used concurrently, it is not necessary to share a single instance — each instance is independent.
+**PaddleSharp OCR:** `PaddleOcrAll` was registered as a singleton because its construction cost made per-request instantiation impractical. Migration code that lifts IronOCR into the same singleton registration introduces unnecessary state sharing across requests. While `IronTesseract` is thread-safe when used concurrently, it is not necessary to share a single instance — each instance is independent.
 
 **Solution:** Evaluate whether the singleton registration serves a purpose beyond performance. For most ASP.NET Core applications, transient registration is the cleaner choice with IronOCR:
 
@@ -629,7 +629,7 @@ Console.WriteLine($"Total: {result.Text}");
 
 ## PaddleSharp OCR Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Audit all PaddleSharp references in the codebase before removing packages:
 
@@ -655,7 +655,7 @@ grep -rn "\.Regions\b\|Rect\.Center\|region\.Text" --include="*.cs" .
 
 Inventory the model files on disk and note their paths. Inventory all deployment targets and whether any have GPU or OpenVINO-specific NuGet conditionals in `.csproj`. Note any services registered as singleton due to PaddleSharp construction cost.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove all `Sdcb.PaddleOCR`, `Sdcb.PaddleInference`, `OpenCvSharp4`, and `OpenCvSharp4.runtime.*` NuGet packages from every project file.
 2. Install `IronOcr` NuGet package.
@@ -675,7 +675,7 @@ Inventory the model files on disk and note their paths. Inventory all deployment
 16. Delete model files from disk and remove model directories from Docker build contexts.
 17. Remove any `.csproj` conditional `PackageReference` blocks for platform-specific Paddle or OpenCV runtime packages.
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify text extraction output matches or exceeds PaddleSharp output on a representative sample of 20–30 documents from each document type in the pipeline.
 - Confirm no `OpenCvSharp`-related assembly load exceptions in application startup logs.

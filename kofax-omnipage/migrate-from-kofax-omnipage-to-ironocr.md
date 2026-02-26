@@ -661,7 +661,7 @@ For documents where zones vary per page, load the same image with different `Cro
 
 ## Kofax OmniPage Migration Checklist
 
-### Pre-Migration Tasks
+### Pre-Migration
 
 Identify all OmniPage integration points in the codebase:
 
@@ -689,7 +689,7 @@ Inventory before starting:
 - Note which output formats are used (searchable PDF, plain text, XML) and their IronOCR equivalents
 - Locate all `.lic` file references in deployment scripts and configuration
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove OmniPage DLL references from all `.csproj` files
 2. Run `dotnet add package IronOcr` in each project that performs OCR
@@ -709,7 +709,7 @@ Inventory before starting:
 16. Remove `PreprocessingSettings` objects and replace boolean flags with explicit `input.Deskew()`, `input.DeNoise()`, `input.Contrast()` method calls
 17. Remove license file paths from deployment scripts, configuration files, and infrastructure-as-code templates
 
-### Post-Migration Testing
+### Post-Migration
 
 - Verify OCR accuracy on a representative sample of 100+ documents from the live corpus — compare against OmniPage output line-by-line for invoices, contracts, and forms
 - Confirm that `CropRectangle`-based zone extraction returns text matching the OmniPage `GetZoneText()` output for each mapped field

@@ -199,7 +199,7 @@ string result = ocrHandler.Process(imagePath);
 // - Image processing expertise your OCR developer may not have
 ```
 
-The workaround is pulling in a separate image processing library, writing preprocessing code yourself, and maintaining that code across library updates. For teams already deep in RasterEdge's ecosystem, some of this may be available through other RasterEdge SDK components — but that requires purchasing and integrating additional products.
+The workaround is pulling in a separate image processing library, writing preprocessing code yourself, and maintaining that code across library updates. For teams already deep in RasterEdge's ecosystem, some tooling is available through other RasterEdge SDK components — but that requires purchasing and integrating additional products.
 
 ### IronOCR Approach
 
@@ -359,11 +359,11 @@ The [PDF input guide](https://ironsoftware.com/csharp/ocr/how-to/input-pdfs/) co
 
 ### Package Management Has Become a Maintenance Burden
 
-Teams that started with two or three XImage.OCR language packages often reach a tipping point when the application expands to 8 or 10 languages. The `.csproj` file now has 9–11 `PackageReference` entries all requiring version synchronization. The junior developer who ran `dotnet outdated` and updated only the core package just silently broke OCR for every language. The CI/CD pipeline intermittently fails because the package cache restored an old language pack. At this stage, the version-sync overhead exceeds any value the per-language packaging might theoretically provide, and consolidating to a single-package solution becomes the obvious architectural decision.
+Teams that started with two or three XImage.OCR language packages often reach a tipping point when the application expands to 8 or 10 languages. The project file now has 9–11 package references all requiring version synchronization. The developer who updated only the core package silently broke OCR for every language. The CI/CD pipeline intermittently fails because the package cache restored an old language pack. At this stage, the version-sync overhead exceeds any value the per-language packaging provides, and consolidating to a single-package solution becomes the obvious architectural decision.
 
 ### Real-World Document Quality Demands Preprocessing
 
-Teams deploying XImage.OCR against controlled, high-quality scans initially encounter no accuracy problems. The issue surfaces when the document pipeline expands — mobile photo uploads, legacy archive scans, fax documents, forms filled in by hand and scanned at 150 DPI. Without preprocessing, Tesseract accuracy on these inputs is poor regardless of which wrapper you use. Teams then face a choice: build and maintain their own preprocessing library integration, or move to a solution with preprocessing built in. IronOCR's built-in `Deskew()`, `DeNoise()`, and `EnhanceResolution()` eliminate the external dependency entirely and deliver the accuracy improvement without requiring image processing expertise on the OCR developer's part.
+Teams deploying XImage.OCR against controlled, high-quality scans initially encounter no accuracy problems. The issue surfaces when the document pipeline expands — mobile photo uploads, legacy archive scans, fax documents, forms filled in by hand and scanned at 150 DPI. Without preprocessing, Tesseract accuracy on these inputs is poor regardless of which wrapper you use. Teams then face a choice: build and maintain their own preprocessing library integration, or move to a solution with preprocessing built in. IronOCR's built-in deskew, denoise, and resolution enhancement eliminate the external dependency entirely and deliver the accuracy improvement without requiring image processing expertise on the OCR developer's part.
 
 ### PDF Workflows Require a Second SDK Purchase
 
@@ -375,7 +375,7 @@ XImage.OCR's Windows-primary architecture becomes a hard constraint when contain
 
 ### Thread Safety Limits Throughput in Server Applications
 
-OCR in a server application, processing batch jobs, or handling concurrent HTTP requests requires multi-threading. XImage.OCR's per-thread handler model means each concurrent thread loads its own Tesseract engine instance, consuming 40–100MB per language per thread. A 4-thread server processing documents in 5 languages loads approximately 900MB–1.2GB just for OCR handler instances. IronOCR's thread-safe `IronTesseract` instance is shared across all threads — the same single instance handles concurrent requests without multiplying memory consumption. Teams hitting memory or throughput walls in production often trace the root cause to this architectural difference.
+OCR in a server application, processing batch jobs, or handling concurrent HTTP requests requires multi-threading. XImage.OCR's per-thread handler model means each concurrent thread loads its own Tesseract engine instance, consuming 40–100MB per language per thread. A 4-thread server processing documents in 5 languages loads approximately 900MB–1.2GB just for OCR handler instances. IronOCR's thread-safe design shares a single instance across all threads — that single instance handles concurrent requests without multiplying memory consumption. Teams hitting memory or throughput walls in production often trace the root cause to this architectural difference.
 
 ## Common Migration Considerations
 
@@ -453,16 +453,13 @@ The [region-based OCR guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-regi
 
 ## Additional IronOCR Capabilities
 
-Beyond the features directly compared above, IronOCR provides capabilities that have no equivalent in XImage.OCR:
+Beyond the core comparison points, IronOCR provides capabilities that have no equivalent in XImage.OCR:
 
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` and barcode values appear in `result.Barcodes` alongside the text results — no second library or second pass required
-- **[Structured result access](https://ironsoftware.com/csharp/ocr/how-to/read-results/):** `result.Words` provides per-word bounding boxes, text content, and confidence scores; `result.Lines` and `result.Pages` enable document structure reconstruction
-- **[Confidence scores](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/):** `result.Confidence` provides a document-level accuracy percentage; per-word confidence is accessible via `word.Confidence` for quality gating workflows
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Non-blocking OCR execution for ASP.NET applications processing documents in request pipelines
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** `result.SaveAsHocrFile()` outputs hOCR with embedded positioning metadata for downstream layout analysis tools
 - **[Specialized document types](https://ironsoftware.com/csharp/ocr/features/specialized/):** Purpose-built processing paths for passports, license plates, MICR cheques, and handwriting recognition
-- **[125+ language support](https://ironsoftware.com/csharp/ocr/languages/):** Full language index with optional NuGet packs that follow the same clean installation pattern as the core package
 - **[Speed optimization](https://ironsoftware.com/csharp/ocr/how-to/ocr-fast-configuration/):** Configuration profiles optimized for throughput when accuracy requirements allow trade-offs, covering page segmentation mode and engine mode selection
+- **[Multi-frame TIFF processing](https://ironsoftware.com/csharp/ocr/how-to/input-tiff-gif/):** All frames of a multi-page TIFF are read in a single call with per-page results — no manual frame iteration required
+- **[NuGet package](https://www.nuget.org/packages/IronOcr):** Available on NuGet with full versioning and standard package management tooling
 
 ## .NET Compatibility and Future Readiness
 
@@ -476,4 +473,4 @@ Preprocessing is the technical gap where the comparison is clearest. Real-world 
 
 PDF support and cross-platform deployment represent the two scenarios where XImage.OCR's architecture creates compounding costs. PDF processing requires a second RasterEdge commercial purchase. Linux and Docker deployment are not supported. For teams whose requirements include either of these — and modern enterprise .NET development typically includes both — IronOCR is the functional match and XImage.OCR requires architectural workarounds that add cost and complexity.
 
-The decision for teams currently using XImage.OCR is primarily about whether the RasterEdge ecosystem justifies the lock-in. For teams choosing an OCR library fresh, IronOCR's single-package model, built-in preprocessing, native PDF support, and cross-platform runtime represent a more complete commercial offering at comparable pricing. Full documentation and examples are available at the [IronOCR tutorials hub](https://ironsoftware.com/csharp/ocr/tutorials/).
+The decision for teams currently using XImage.OCR is primarily about whether the RasterEdge ecosystem justifies the lock-in. For teams choosing an OCR library fresh, IronOCR's single-package model, built-in preprocessing, native PDF support, and cross-platform runtime represent a more complete commercial offering at comparable pricing.

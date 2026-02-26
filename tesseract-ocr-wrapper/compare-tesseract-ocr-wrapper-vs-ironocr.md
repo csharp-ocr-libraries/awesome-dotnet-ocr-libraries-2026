@@ -422,7 +422,7 @@ The fix in TesseractOCR requires wrapping every call in logic that checks whethe
 
 Compliance workflows in legal, healthcare, and financial services commonly require that scanned documents be stored as searchable PDFs — text-searchable, keyword-indexable, compatible with document management systems. TesseractOCR produces plain text. Converting that text back into a properly layered searchable PDF requires a separate PDF library, manual page sizing, font metrics, text coordinate mapping, and layer assembly.
 
-The same requirement in IronOCR is `result.SaveAsSearchablePdf("output.pdf")`. The output is a standard PDF/A-compatible file with an invisible text layer aligned to the original scanned content. Teams who have spent days building the searchable PDF assembly code around TesseractOCR often find the effort exceeds the cost of an [IronOCR Lite license at $749](https://ironsoftware.com/csharp/ocr/licensing/) — and they get preprocessing, structured data, and barcode reading along with it.
+IronOCR handles this in a single method call that produces a standard PDF/A-compatible file with an invisible text layer aligned to the original scanned content. Teams who have spent days building the searchable PDF assembly code around TesseractOCR often find the effort exceeds the cost of an [IronOCR Lite license at $749](https://ironsoftware.com/csharp/ocr/licensing/) — and they get preprocessing, structured data, and barcode reading along with it.
 
 ### When Deployment Complexity Becomes a Liability
 
@@ -481,13 +481,11 @@ TesseractOCR uses a tessdata directory with manually downloaded `.traineddata` f
 
 Features not covered in the sections above that extend IronOCR's value for production applications:
 
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** A single pass over a document extracts both text content and any QR codes, barcodes, or Data Matrix codes present on the page — no separate barcode library needed
 - **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** `CropRectangle` limits recognition to a specific area of a document, dramatically reducing processing time for known-layout forms where only certain zones contain variable data
 - **[Async OCR](https://ironsoftware.com/csharp/ocr/how-to/async/):** Non-blocking OCR for ASP.NET applications — `await ocr.ReadAsync(input)` integrates cleanly into async controller actions without blocking the thread pool
 - **[Progress tracking](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Multi-page batch jobs report progress through a callback, enabling accurate progress bars in processing applications
 - **[Computer vision integration](https://ironsoftware.com/csharp/ocr/how-to/computer-vision/):** Object detection within documents identifies regions of interest before OCR is applied, useful for processing heterogeneous document types
 - **[Specialized document handling](https://ironsoftware.com/csharp/ocr/how-to/read-micr-cheque/):** Purpose-built support for MICR cheques, passports, license plates, and handwritten text — document types that require specific recognition tuning beyond standard Tesseract modes
-- **[Language features](https://ironsoftware.com/csharp/ocr/features/languages/):** 125+ languages installable as individual NuGet packages, covering Latin, CJK, Arabic, Hebrew, Cyrillic, and Devanagari scripts with trained models optimized per script
 
 ## .NET Compatibility and Future Readiness
 

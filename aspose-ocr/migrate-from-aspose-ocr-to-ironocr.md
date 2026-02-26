@@ -578,7 +578,7 @@ grep -rn "Aspose.OCR.License\|SetLicense" --include="*.cs" .
 
 Document each occurrence by category: recognition calls, settings objects, preprocessing pipelines, output calls, and license initialization. Note all `DetectAreasMode` values in use — these drive which layout migration path applies. Record all `SaveFormat` enum values — each non-PDF format needs the custom serialization approach from Issue 3 above.
 
-### Code Update Tasks
+### Code Migration
 
 1. Remove `Aspose.OCR` NuGet package from all projects in the solution
 2. Install `IronOcr` NuGet package in all projects

@@ -72,7 +72,6 @@ Key characteristics of IronOCR:
 | **Licensing** | | |
 | License model | Annual subscription | Perpetual one-time |
 | 1-developer cost | $999/year | $749 once |
-| 5-developer 3-year TCO | ~$15,000+ | $2,999 once |
 | Perpetual option | No | Yes |
 | **PDF Handling** | | |
 | Standard PDF OCR | Yes (`RecognizePdf`) | Yes (`Read` or `LoadPdf`) |
@@ -390,11 +389,11 @@ Aspose.OCR's manual filter model works well when your input documents are unifor
 
 ### When Developer Onboarding Highlights the API Weight
 
-The verbosity gap is small on a per-call basis but noticeable during onboarding. A new engineer joining a team needs to understand the `RecognitionSettings` object, the `PreprocessingFilter` collection API, the difference between `RecognizeImage` and `RecognizePdf`, the 0-based page indexing in `DocumentRecognitionSettings`, and the array-based confidence model. These are not difficult concepts, but they are a non-trivial surface area compared to `new IronTesseract().Read("file.pdf").Text`. Teams that care about reducing the barrier to contributing to OCR-related features find the simpler API reduces the time between "engineer joins team" and "engineer ships OCR feature."
+The verbosity gap is small on a per-call basis but noticeable during onboarding. A new engineer joining a team needs to understand four distinct configuration objects, the difference between image and PDF recognition entry points, the 0-based page indexing convention, and the array-based confidence model. These are not difficult concepts, but they represent a non-trivial surface area to absorb before shipping a first feature. Teams that care about reducing the barrier to contributing to OCR-related code find the simpler IronOCR API cuts the time between "engineer joins team" and "engineer ships OCR feature" measurably.
 
 ### When a Docker or Linux Deployment Is Introduced
 
-Aspose.OCR's native library dependencies require specific configuration in Docker environments. The difference is usually a few lines in the Dockerfile and some library installations, but it is an undocumented step that surfaces during CI pipeline setup or staging environment provisioning. IronOCR's self-contained package deploys with a standard .NET base image and a single `apt-get install libgdiplus` line on Linux. For teams where deployment friction has a cost in engineering hours, this simplification matters.
+Aspose.OCR's native library dependencies require specific configuration in Docker environments. The difference is usually a few lines in the Dockerfile and some library installations, but it is an undocumented step that surfaces during CI pipeline setup or staging environment provisioning. IronOCR's self-contained package deploys with a standard .NET base image and a single system library installation on Linux. For teams where deployment friction has a cost in engineering hours, this simplification matters.
 
 ## Common Migration Considerations
 
@@ -481,10 +480,8 @@ Beyond the comparison areas covered above, IronOCR includes features that fall o
 
 - **Barcode reading during OCR:** Set `ocr.Configuration.ReadBarCodes = true` and barcodes are detected alongside text in a single pass. The [barcode OCR example](https://ironsoftware.com/csharp/ocr/examples/csharp-ocr-barcodes/) shows mixed document processing where QR codes, Code 128, and text coexist on the same page.
 - **Region-based OCR:** Pass a `CropRectangle` to `input.LoadImage()` to restrict recognition to a named area of a document — useful for fixed-format forms where the invoice number is always at coordinates (200, 100) to (400, 130). See the [region crop example](https://ironsoftware.com/csharp/ocr/examples/net-tesseract-content-area-rectangle-crop/).
-- **Structured data extraction with full hierarchy:** `result.Pages`, `result.Paragraphs`, `result.Lines`, `result.Words`, and `result.Characters` are navigable collections with X/Y/Width/Height positioning at each level. The [read results guide](https://ironsoftware.com/csharp/ocr/how-to/read-results/) covers building document layout parsers from this data.
 - **Async OCR:** `IronTesseract.ReadAsync()` integrates with async ASP.NET controllers without blocking. The [async OCR guide](https://ironsoftware.com/csharp/ocr/how-to/async/) covers task composition patterns for high-throughput web services.
 - **Progress tracking:** Long-running multi-page PDF jobs expose a progress event for UI feedback. The [progress tracking guide](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/) shows event subscription patterns for Windows Forms and WPF applications.
-- **hOCR export:** `result.SaveAsHocrFile()` produces XHTML with embedded bounding box coordinates, suitable for downstream layout analysis tools. See the [hOCR export guide](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/).
 - **Handwriting recognition:** [Handwritten document processing](https://ironsoftware.com/csharp/ocr/how-to/read-handwritten-image/) benefits from explicit preprocessing tuned for connected strokes.
 - **Specialized document types:** Dedicated guides cover [passport reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/), [MICR/cheque reading](https://ironsoftware.com/csharp/ocr/how-to/read-micr-cheque/), and [license plate recognition](https://ironsoftware.com/csharp/ocr/how-to/read-license-plate/).
 
@@ -500,4 +497,4 @@ Neither library has a functional monopoly. Aspose.OCR covers 130+ languages in t
 
 What Aspose.OCR cannot match is the encrypted PDF experience. Requiring a separate Aspose.PDF subscription to open a password-protected document is a genuine workflow break in enterprise environments where encrypted document exchange is standard. IronOCR's `input.LoadPdf("file.pdf", Password: "secret")` requires nothing beyond the base package. For teams where PDF encryption is a first-class requirement — and most enterprise document pipelines eventually encounter it — this gap is decisive.
 
-For teams evaluating a new OCR integration in 2026, the combination of perpetual pricing, automatic preprocessing, and native encrypted PDF support makes IronOCR the lower-friction choice for general .NET document processing. Aspose.OCR remains a defensible option for teams already invested in the Aspose ecosystem who process uniform, well-scanned documents with predictable preprocessing requirements. But for teams choosing a library without that existing investment, the math and the API both point the same direction. Start with the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) to evaluate against your specific document types before committing to either subscription.
+For teams evaluating a new OCR integration in 2026, the combination of perpetual pricing, automatic preprocessing, and native encrypted PDF support makes IronOCR the lower-friction choice for general .NET document processing. Aspose.OCR remains a defensible option for teams already invested in the Aspose ecosystem who process uniform, well-scanned documents with predictable preprocessing requirements. But for teams choosing a library without that existing investment, the math and the API both point the same direction.

@@ -13,7 +13,7 @@ Textract exposes several distinct analysis modes, each priced separately:
 - **AnalyzeID:** Identity document extraction at $0.025 per page
 - **StartDocumentTextDetection / StartDocumentAnalysis:** Asynchronous API required for any multi-page PDF, mandating an S3 staging bucket, job polling, and result pagination
 
-The result model uses a flat list of `Block` objects with relationship IDs that must be traversed to reconstruct tables, forms, or any structured output. A simple table extraction requires iterating `BlockType.TABLE` blocks, finding child `BlockType.CELL` blocks via `RelationshipType.CHILD` relationship IDs, then fetching `BlockType.WORD` blocks for each cell's text. This relationship graph model is powerful, but it is not lightweight.
+The result model uses a flat list of `Block` objects with relationship IDs that must be traversed to reconstruct tables, forms, or any structured output. A simple table extraction requires iterating `BlockType.TABLE` blocks, finding child `BlockType.CELL` blocks via `RelationshipType.CHILD` relationship IDs, then fetching `BlockType.WORD` blocks for each cell's text. This relationship graph model handles complex document structures, but it is not lightweight.
 
 ### The S3-Async Pipeline
 
@@ -159,10 +159,6 @@ Key characteristics of the IronOCR architecture:
 | GDPR | Data crosses to AWS regions | Data stays in-boundary |
 | ITAR | Prohibited without special authorization | Fully on-premise |
 | Air-gapped / CMMC Level 3 | Not possible | Supported |
-| **Cost at Scale** | | |
-| 10,000 pages/month (basic OCR) | $18/month / $216/year | $0 after license purchase |
-| 100,000 pages/month (basic OCR) | $150/month / $1,800/year | $0 after license purchase |
-| 100,000 pages/month (tables) | $1,500/month / $18,000/year | $0 after license purchase |
 
 ## Cost at Scale
 
@@ -537,14 +533,11 @@ This is a convenience wrapper, not a requirement. For server-side processing whe
 
 Beyond the comparison points above, IronOCR provides capabilities that have no AWS Textract equivalent:
 
-- **[Searchable PDF output](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/):** `result.SaveAsSearchablePdf("output.pdf")` embeds recognized text as a hidden layer, making scanned PDFs full-text searchable without a separate PDF processing library
 - **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/):** Set `ocr.Configuration.ReadBarCodes = true` and barcodes in the document are extracted alongside text in one pass — no separate barcode scanning step
-- **[Region-based OCR](https://ironsoftware.com/csharp/ocr/how-to/ocr-region-of-an-image/):** `input.LoadImage(path, new CropRectangle(x, y, w, h))` limits processing to a specific document zone — useful for fixed-format forms where field positions are known
-- **[125+ languages via NuGet packs](https://ironsoftware.com/csharp/ocr/languages/):** Install `IronOcr.Languages.ChineseSimplified` or any of 125 other packs; language data loads locally with no API pricing tier
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/):** `result.SaveAsHocrFile("output.hocr")` produces a structured HTML file with word positions and confidence data, compatible with downstream document processing tools
 - **[Progress tracking for long jobs](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/):** Subscribe to progress events for multi-page processing without polling an external service
 - **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/):** Optimized pipeline for typical office scanner output including duplex scans and mixed-orientation pages
-- **[Table extraction](https://ironsoftware.com/csharp/ocr/how-to/read-table-in-document/):** Reconstruct tabular data from word position coordinates in structured documents
+- **[Multi-language simultaneous extraction](https://ironsoftware.com/csharp/ocr/languages/):** Combine language packs at read time — `OcrLanguage.French + OcrLanguage.German` — with no API tier change
+- **[Passport and ID reading](https://ironsoftware.com/csharp/ocr/how-to/read-passport/):** Dedicated pipeline for machine-readable zones on identity documents, extracting structured fields without manual region definition
 
 ## .NET Compatibility and Future Readiness
 
@@ -558,4 +551,4 @@ The cost arithmetic is the clearest dividing line. At 10,000 pages per month, Te
 
 Data sovereignty is the second structural constraint. For healthcare, legal, financial, and government workloads, the question of where documents are processed is not a preference — it is a compliance requirement. IronOCR processes locally by design, not by configuration. There is no "local mode" to enable; local processing is the only mode. That makes the compliance answer simple: your documents stay in your infrastructure because there is nowhere else for them to go.
 
-For teams evaluating OCR at genuine scale, or operating in environments where document data cannot leave internal infrastructure, the [IronOCR documentation](https://ironsoftware.com/csharp/ocr/docs/) provides the complete API reference, deployment guides for Docker, AWS, Azure, and Linux, and tutorials covering the full range of OCR use cases from basic image reading to searchable PDF generation and multi-language extraction.
+For teams evaluating OCR at genuine scale, or operating in environments where document data cannot leave internal infrastructure, IronOCR's documentation provides the complete API reference, deployment guides for Docker, AWS, Azure, and Linux, and tutorials covering the full range of OCR use cases from basic image reading to searchable PDF generation and multi-language extraction.

@@ -122,7 +122,6 @@ Key characteristics:
 | hOCR export | No | Yes (`SaveAsHocrFile`) |
 | **Cost and compliance** | | |
 | Per-document cost | $0.001 per page (Form Recognizer) | None |
-| 100K docs/month, 3-year cost | ~$3,600+ | $2,999 one-time |
 | HIPAA-compliant deployment | Complex (BAA + cloud) | Straightforward (local only) |
 | ITAR suitability | Not for controlled data | Fully on-premise |
 | FedRAMP air-gapped | No | Yes |
@@ -164,9 +163,7 @@ Azure bills per transaction using tiered pricing: $1.00 per 1,000 transactions f
 //   (Every page multiplies the bill)
 ```
 
-At 50,000 documents per month, the IronOCR Lite license ($749) pays for itself in under two months of Azure savings. At 100,000 documents per month, IronOCR Professional ($2,999) pays back in approximately 26 months — and then costs nothing more forever. The three-year savings at 100,000 docs/month exceed $400.
-
-The Azure README's total cost of ownership calculation for 50,000 documents per month reaches approximately $952/month when accounting for OCR processing, Form Recognizer fees for PDFs, network egress, DevOps overhead, and compliance review — roughly $11,400 annually, versus $2,999 once for IronOCR.
+At 50,000 documents per month, the IronOCR Lite license ($749) pays for itself in under two months of Azure savings. At 100,000 documents per month, IronOCR Professional ($2,999) pays back in under two and a half years — and then costs nothing more.
 
 ### IronOCR Approach
 
@@ -284,7 +281,7 @@ The Azure Read API is async because it cannot be synchronous — cloud I/O has n
 
 ### Azure Computer Vision Approach
 
-Every Azure OCR call requires `async`/`await`. Production code adds retry logic for 429 rate-limit errors and 5xx service errors. A minimal robust implementation looks like this:
+Every Azure OCR call requires `async`/`await`. Production code adds retry logic for 429 rate-limit errors and 5xx service errors. A minimal production implementation looks like this:
 
 ```csharp
 public async Task<string> RobustExtractAsync(string imagePath)
@@ -507,7 +504,7 @@ foreach (var word in result.Words)
 Console.WriteLine($"Overall: {result.Confidence}%");
 ```
 
-The [OcrResult API reference](https://ironsoftware.com/csharp/ocr/object-reference/api/IronOcr.OcrResult.html) documents all result properties including the confidence scale. For a deeper look at interpreting confidence output, see the [confidence scores how-to guide](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/).
+The [OcrResult API reference](https://ironsoftware.com/csharp/ocr/object-reference/api/IronOcr.OcrResult.html) documents all result properties including the confidence scale. The [confidence scores how-to guide](https://ironsoftware.com/csharp/ocr/how-to/tesseract-result-confidence/) covers threshold selection and per-element interpretation.
 
 ### PDF Processing Service Consolidation
 
@@ -581,12 +578,7 @@ The [region-based OCR guide](https://ironsoftware.com/csharp/ocr/how-to/ocr-regi
 
 Beyond the comparison points above, IronOCR provides capabilities that Azure Computer Vision does not expose through its standard OCR API:
 
-- **[Automatic image preprocessing](https://ironsoftware.com/csharp/ocr/how-to/image-quality-correction/)**: Deskew, DeNoise, Contrast enhancement, Binarize, Sharpen, Dilate, Erode, and resolution scaling — applied automatically or through explicit `OcrInput` filter calls. Azure's server-side preprocessing is opaque and not configurable.
-- **[Barcode reading during OCR](https://ironsoftware.com/csharp/ocr/how-to/barcodes/)**: Set `ocr.Configuration.ReadBarCodes = true` to extract barcodes and QR codes alongside text in a single pass. Azure Computer Vision requires Image Analysis's separate object detection features for barcode support.
-- **[Searchable PDF generation](https://ironsoftware.com/csharp/ocr/how-to/searchable-pdf/)**: `result.SaveAsSearchablePdf(outputPath)` creates a PDF/A-compatible searchable document. Azure has no equivalent single-method output.
-- **[125+ language support via NuGet packs](https://ironsoftware.com/csharp/ocr/languages/)**: Install `IronOcr.Languages.Arabic`, `IronOcr.Languages.Japanese`, and others as NuGet packages. No tessdata management, no server-side language model selection.
-- **[hOCR export](https://ironsoftware.com/csharp/ocr/how-to/html-hocr-export/)**: `result.SaveAsHocrFile(path)` produces standards-compliant hOCR output for downstream layout analysis tools.
-- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/)**: Automatic preprocessing handles low-quality scans that would return low-confidence results from cloud APIs without preprocessing configuration options.
+- **[Scanned document processing](https://ironsoftware.com/csharp/ocr/how-to/read-scanned-document/)**: The full preprocessing pipeline — deskew, denoise, contrast, binarization, sharpen — is applied before the OCR engine sees the image, improving accuracy on scans that return empty or low-confidence results from cloud APIs.
 - **[Progress tracking for long documents](https://ironsoftware.com/csharp/ocr/how-to/progress-tracking/)**: Subscribe to progress events during multi-page PDF processing — useful for long-running batch jobs with UI feedback requirements.
 - **[Computer vision preprocessing](https://ironsoftware.com/csharp/ocr/how-to/computer-vision/)**: Deep learning-based preprocessing for challenging documents such as photos taken at angles or under inconsistent lighting.
 
@@ -602,4 +594,4 @@ The cost model, however, does not scale. At 50,000 documents per month, IronOCR 
 
 The data sovereignty argument is more absolute. If PHI, ITAR-controlled data, attorney-client privileged communications, or any document category that cannot legally or contractually cross an organizational boundary flows through your OCR pipeline, Azure Computer Vision is excluded from the design — not disadvantaged, excluded. IronOCR's local processing model handles those workloads without architectural compromise.
 
-The async polling complexity is real overhead. The retry logic, the rate-limit handling, the network failure modes, and the split between `ImageAnalysisClient` and `DocumentAnalysisClient` for images versus PDFs all add code that has no OCR value — it is cloud-integration code. IronOCR's synchronous `Read()` method handles images and PDFs with identical code, no async propagation required, and no retry logic needed. For teams who want to spend engineering effort on their application rather than on cloud API plumbing, that simplicity has compounding value over the life of a project. The [IronOCR documentation hub](https://ironsoftware.com/csharp/ocr/docs/) covers the complete API surface.
+The async polling complexity is real overhead. The retry logic, the rate-limit handling, the network failure modes, and the split between `ImageAnalysisClient` and `DocumentAnalysisClient` for images versus PDFs all add code that has no OCR value — it is cloud-integration code. IronOCR's synchronous `Read()` method handles images and PDFs with identical code, no async propagation required, and no retry logic needed. For teams who want to spend engineering effort on their application rather than on cloud API plumbing, that simplicity has compounding value over the life of a project.
